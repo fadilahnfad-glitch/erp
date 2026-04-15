@@ -560,42 +560,56 @@ function showImportTemplate(fields, entityType) {
   overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 
-  // Download Template
-  document.getElementById('downloadTemplate').addEventListener('click', () => {
-    const ws_data = [fields.map(f => f.label), sampleRow];
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-    
-    const wscols = fields.map(() => ({ wch: 18 }));
-    ws['!cols'] = wscols;
-    
-    // Format header
-    for (let i = 0; i < fields.length; i++) {
-      const cell = XLSX.utils.encode_cell({ r: 0, c: i });
-      if (!ws[cell]) continue;
-      ws[cell].s = {
-        font: { bold: true, color: { rgb: 'FFFFFF' } },
-        fill: { fgColor: { rgb: '1E293B' } },
-        alignment: { horizontal: 'center', vertical: 'center' },
-        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+  // Download Template - with proper event delegation
+  setTimeout(() => {
+    const dlBtn = document.getElementById('downloadTemplate');
+    if (dlBtn) {
+      dlBtn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+          const ws_data = [fields.map(f => f.label), sampleRow];
+          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+          
+          const wscols = fields.map(() => ({ wch: 18 }));
+          ws['!cols'] = wscols;
+          
+          // Format header
+          for (let i = 0; i < fields.length; i++) {
+            const cell = XLSX.utils.encode_cell({ r: 0, c: i });
+            if (!ws[cell]) continue;
+            ws[cell].s = {
+              font: { bold: true, color: { rgb: 'FFFFFF' } },
+              fill: { fgColor: { rgb: '1E293B' } },
+              alignment: { horizontal: 'center', vertical: 'center' },
+              border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+            };
+          }
+          
+          // Format sample row (light gray)
+          for (let i = 0; i < fields.length; i++) {
+            const cell = XLSX.utils.encode_cell({ r: 1, c: i });
+            if (!ws[cell]) continue;
+            ws[cell].s = {
+              fill: { fgColor: { rgb: 'F1F5F9' } },
+              alignment: { horizontal: 'left', vertical: 'center' },
+              border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+            };
+          }
+          
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Template');
+          XLSX.writeFile(wb, `${entityType}_TEMPLATE.xlsx`);
+          toast('✅ Template downloaded');
+        } catch (err) {
+          console.error('Download error:', err);
+          toast('Download gagal', 'error');
+        }
+        return false;
       };
     }
-    
-    // Format sample row (light gray)
-    for (let i = 0; i < fields.length; i++) {
-      const cell = XLSX.utils.encode_cell({ r: 1, c: i });
-      if (!ws[cell]) continue;
-      ws[cell].s = {
-        fill: { fgColor: { rgb: 'F1F5F9' } },
-        alignment: { horizontal: 'left', vertical: 'center' },
-        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
-      };
-    }
-    
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template');
-    XLSX.writeFile(wb, `${entityType}_TEMPLATE.xlsx`);
-    toast('✅ Template downloaded');
-  });
+  }, 100);
 
   // Proceed with file selection
   document.getElementById('proceedImport').addEventListener('click', () => {
@@ -1051,5 +1065,5 @@ async function init() {
 
 init();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec88197738afce2',t:'MTc3NjIzMDQ4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec92425147ecdd9',t:'MTc3NjIzNzEzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
