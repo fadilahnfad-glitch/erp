@@ -6,9 +6,49 @@
   <title>E-Commerce ERP</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
+  <script>
+    // Ensure XLSX is available
+    window.xlsxReady = new Promise((resolve) => {
+      if (typeof XLSX !== 'undefined') {
+        console.log('✅ XLSX library ready');
+        resolve(true);
+        return;
+      }
+      
+      let attempts = 0;
+      const maxAttempts = 200; // 10 second timeout (200 * 50ms)
+      
+      const checkXLSX = setInterval(() => {
+        attempts++;
+        if (typeof XLSX !== 'undefined') {
+          clearInterval(checkXLSX);
+          console.log('✅ XLSX library loaded after', attempts * 50, 'ms');
+          resolve(true);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkXLSX);
+          console.warn('⚠️ XLSX library failed to load - fallback mode');
+          resolve(false);
+        }
+      }, 50);
+    });
+    
+    // Alternative: Load from backup CDN if needed
+    if (typeof XLSX === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      script.onload = () => {
+        console.log('✅ XLSX loaded from backup CDN');
+        window.xlsxReady = Promise.resolve(true);
+      };
+      script.onerror = () => {
+        console.error('❌ XLSX failed on both CDNs');
+      };
+      document.head.appendChild(script);
+    }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
   <script>
 tailwind.config = {
@@ -37,6 +77,7 @@ html, body { height: 100%; margin: 0; }
 .toast-msg { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 12px 20px; border-radius: 8px; font-size: 14px; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
 @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
 @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 input, select, textarea { font-family: 'DM Sans', sans-serif; }
 table { border-collapse: collapse; }
 th { position: sticky; top: 0; z-index: 2; }
@@ -121,6 +162,7 @@ function genId() { return Date.now().toString(36) + Math.random().toString(36).s
 
 function fmt(n) { return new Intl.NumberFormat('id-ID').format(n || 0); }
 function fmtK(n) { if (!n) return '0'; if (n >= 1e9) return (n/1e9).toFixed(1)+'B'; if (n >= 1e6) return (n/1e6).toFixed(1)+'M'; if (n >= 1e3) return (n/1e3).toFixed(1)+'K'; return fmt(n); }
+function fmtIDR(n) { return 'Rp ' + fmt(n || 0); }
 
 // ============ DATA SDK ============
 const dataHandler = {
@@ -217,11 +259,8 @@ function renderCurrentPage() {
 const productFields = [
   { key: 'internal_code', label: 'SKU Code', type: 'text', required: true },
   { key: 'name', label: 'Name', type: 'text', required: true },
-  { key: 'variant', label: 'Variant', type: 'text' },
   { key: 'category', label: 'Category', type: 'text' },
   { key: 'unit', label: 'Unit', type: 'text' },
-  { key: 'purchase_price', label: 'Purchase Price', type: 'number' },
-  { key: 'selling_price', label: 'Selling Price', type: 'number' },
   { key: 'weight', label: 'Weight (g)', type: 'number' },
 ];
 const channelFields = [
@@ -282,35 +321,85 @@ function renderCRUD(entityType, title, fields) {
   `;
 
   // Export Excel
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    const ws_data = [fields.map(f => f.label), ...items.map(item => fields.map(f => item[f.key] ?? ''))];
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const exportBtn = document.getElementById('exportBtn');
     
-    // Style header row
-    const wscols = fields.map(() => ({ wch: 18 }));
-    ws['!cols'] = wscols;
-    
-    // Format header row (bold, background)
-    for (let i = 0; i < fields.length; i++) {
-      const cell = XLSX.utils.encode_cell({ r: 0, c: i });
-      if (!ws[cell]) continue;
-      ws[cell].s = {
-        font: { bold: true, color: { rgb: 'FFFFFF' } },
-        fill: { fgColor: { rgb: '1E293B' } },
-        alignment: { horizontal: 'center', vertical: 'center' },
-        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
-      };
+    try {
+      exportBtn.disabled = true;
+      exportBtn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block"></i> Preparing...';
+      
+      // Wait for XLSX
+      const isXLSXReady = await window.xlsxReady;
+      
+      if (!isXLSXReady || typeof XLSX === 'undefined') {
+        toast('Excel library not available. Please refresh and try again.', 'error');
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = '<i data-lucide="download" style="width:14px;height:14px"></i> Export';
+        lucide.createIcons();
+        return;
+      }
+      
+      if (items.length === 0) {
+        toast('No records to export', 'error');
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = '<i data-lucide="download" style="width:14px;height:14px"></i> Export';
+        lucide.createIcons();
+        return;
+      }
+      
+      // Prepare data
+      const headers = fields.map(f => f.label);
+      const rows = items.map(item => fields.map(f => {
+        const val = item[f.key];
+        return val === null || val === undefined ? '' : String(val);
+      }));
+      
+      const ws_data = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+      
+      // Set column widths
+      ws['!cols'] = fields.map(() => ({ wch: 18 }));
+      
+      // Format header row
+      for (let i = 0; i < headers.length; i++) {
+        const cell = XLSX.utils.encode_cell({ r: 0, c: i });
+        if (ws[cell]) {
+          ws[cell].s = {
+            font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+            fill: { fgColor: { rgb: '1E293B' } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border: { 
+              top: { style: 'thin', color: { rgb: '64748B' } },
+              bottom: { style: 'thin', color: { rgb: '64748B' } },
+              left: { style: 'thin', color: { rgb: '64748B' } },
+              right: { style: 'thin', color: { rgb: '64748B' } }
+            }
+          };
+        }
+      }
+      
+      // Create workbook and export
+      const wb = XLSX.utils.book_new();
+      const sheetName = title.replace(/\s+/g, '_').slice(0, 31); // Excel sheet name limit
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      
+      const filename = `${entityType}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      
+      toast(`✅ Exported ${items.length} record${items.length !== 1 ? 's' : ''}`);
+      
+    } catch (err) {
+      console.error('Export error:', err);
+      toast('Export failed: ' + (err.message || 'Unknown error'), 'error');
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.innerHTML = '<i data-lucide="download" style="width:14px;height:14px"></i> Export';
+      lucide.createIcons();
     }
-    
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, title.replace(/\s+/g, '_'));
-    XLSX.writeFile(wb, `${entityType}_${new Date().toISOString().slice(0,10)}.xlsx`);
-    toast(`✅ Exported ${items.length} records to ${entityType}.xlsx`);
   });
 
   // Import Excel
   document.getElementById('importBtn').addEventListener('click', () => {
-    // Show template info first
     showImportTemplate(fields, entityType);
   });
 
@@ -319,45 +408,101 @@ function renderCRUD(entityType, title, fields) {
     if (!file) return;
     
     try {
-      const data = await file.arrayBuffer();
-      const wb = XLSX.read(data);
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      // Check if XLSX is available
+      const isXLSXReady = await window.xlsxReady;
       
-      if (rows.length < 2) { toast('File kosong atau format salah', 'error'); return; }
+      if (!isXLSXReady || typeof XLSX === 'undefined') {
+        toast('Excel library not available. Please refresh and try again.', 'error');
+        document.getElementById('fileInput').value = '';
+        return;
+      }
+      
+      const importBtn = document.querySelector('button[id="importBtn"]');
+      if (importBtn) {
+        importBtn.disabled = true;
+        importBtn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block"></i> Importing...';
+      }
+      
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data, { cellFormula: false });
+      
+      if (!wb.SheetNames || wb.SheetNames.length === 0) {
+        toast('File has no sheets', 'error');
+        return;
+      }
+      
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      
+      if (!rows || rows.length < 2) {
+        toast('File is empty or has invalid format', 'error');
+        return;
+      }
       
       const headers = rows[0];
-      const fieldKeys = fields.map(f => f.label);
+      if (!headers || headers.length === 0) {
+        toast('No headers found in file', 'error');
+        return;
+      }
       
-      let imported = 0, skipped = 0;
+      let imported = 0, skipped = 0, errors = [];
       
       for (let i = 1; i < rows.length; i++) {
-        if (allRecords.length >= LIMIT) { 
-          toast(`Limit tercapai. ${imported} imported, ${skipped + (rows.length - i)} skipped.`, 'error'); 
-          break; 
+        if (allRecords.length >= LIMIT) {
+          const remaining = rows.length - i;
+          toast(`⚠️ Limit reached. Imported ${imported}, skipped ${skipped + remaining}.`, 'error');
+          break;
         }
         
         const row = rows[i];
-        if (!row || row.every(v => !v)) continue; // Skip empty rows
         
-        const obj = { id: genId() };
-        let hasData = false;
+        // Skip empty rows
+        if (!row || row.every(v => !v || v === '')) {
+          skipped++;
+          continue;
+        }
         
-        fields.forEach((f, idx) => {
-          const cellValue = row[idx];
-          if (cellValue !== undefined && cellValue !== '') {
-            if (f.type === 'number') {
-              obj[f.key] = parseFloat(cellValue) || cellValue;
+        try {
+          const obj = { id: genId() };
+          let hasData = false;
+          
+          fields.forEach((f, idx) => {
+            const cellValue = row[idx];
+            
+            if (cellValue !== null && cellValue !== undefined && cellValue !== '') {
+              const strVal = String(cellValue).trim();
+              
+              if (f.type === 'number') {
+                const numVal = parseFloat(strVal);
+                obj[f.key] = isNaN(numVal) ? strVal : numVal;
+              } else if (f.type === 'select') {
+                obj[f.key] = strVal;
+              } else {
+                obj[f.key] = strVal;
+              }
+              
+              hasData = true;
             } else {
-              obj[f.key] = cellValue.toString().trim();
+              obj[f.key] = '';
             }
-            hasData = true;
-          } else {
-            obj[f.key] = '';
+          });
+          
+          // Validate required fields
+          const missingRequired = fields
+            .filter(f => f.required && (!obj[f.key] || obj[f.key] === ''))
+            .map(f => f.label);
+          
+          if (missingRequired.length > 0) {
+            errors.push(`Row ${i + 1}: Missing ${missingRequired.join(', ')}`);
+            skipped++;
+            continue;
           }
-        });
-        
-        if (hasData) {
+          
+          if (!hasData) {
+            skipped++;
+            continue;
+          }
+          
           const result = await window.dataSdk.create({
             entity_type: entityType,
             data_json: JSON.stringify(obj),
@@ -365,17 +510,45 @@ function renderCRUD(entityType, title, fields) {
             updated_at: new Date().toISOString(),
             sort_key: entityType + '_' + Date.now()
           });
-          if (result.isOk) { imported++; } else { skipped++; }
-        } else {
+          
+          if (result.isOk) {
+            imported++;
+          } else {
+            errors.push(`Row ${i + 1}: ${result.error?.message || 'Save failed'}`);
+            skipped++;
+          }
+        } catch (rowErr) {
+          errors.push(`Row ${i + 1}: ${rowErr.message}`);
           skipped++;
         }
       }
       
-      toast(`✅ Imported ${imported} records${skipped > 0 ? `, skipped ${skipped}` : ''}`);
+      // Show results
+      if (imported > 0) {
+        toast(`✅ Imported ${imported} record${imported !== 1 ? 's' : ''}${skipped > 0 ? `, skipped ${skipped}` : ''}`);
+      } else if (skipped > 0) {
+        toast(`⚠️ No records imported. ${skipped} skipped.`, 'error');
+      } else {
+        toast('No data to import', 'error');
+      }
+      
+      if (errors.length > 0 && errors.length <= 5) {
+        console.log('Import errors:', errors.join('\n'));
+      }
+      
       document.getElementById('fileInput').value = '';
+      
     } catch (err) {
       console.error('Import error:', err);
-      toast('Import gagal. Periksa format file.', 'error');
+      toast('Import failed: ' + (err.message || 'Unknown error'), 'error');
+      document.getElementById('fileInput').value = '';
+    } finally {
+      const importBtn = document.querySelector('button[id="importBtn"]');
+      if (importBtn) {
+        importBtn.disabled = false;
+        importBtn.innerHTML = '<i data-lucide="upload" style="width:14px;height:14px"></i> Import';
+      }
+      lucide.createIcons();
     }
   });
 
@@ -398,6 +571,12 @@ function renderCRUD(entityType, title, fields) {
 function showFormModal(entityType, fields, editItem) {
   const existing = document.querySelector('.modal-overlay');
   if (existing) existing.remove();
+
+  // Special handling for products with variants
+  if (entityType === 'product') {
+    showProductFormModal(editItem);
+    return;
+  }
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -435,7 +614,9 @@ function showFormModal(entityType, fields, editItem) {
   document.getElementById('crudForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
-    btn.disabled = true; btn.textContent = 'Saving...';
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block"></i> Saving...';
+    
     const fd = new FormData(e.target);
     const obj = { id: editItem?.id || genId() };
     fields.forEach(f => {
@@ -443,12 +624,198 @@ function showFormModal(entityType, fields, editItem) {
       if (f.type === 'number' && v) v = parseFloat(v);
       obj[f.key] = v || '';
     });
+    
     let ok;
-    if (editItem) { ok = await updateRecord(editItem.__raw, obj); }
-    else { ok = await createRecord(entityType, obj); }
-    if (ok) { toast(editItem ? 'Updated!' : 'Created!'); overlay.remove(); }
-    else { btn.disabled = false; btn.textContent = 'Save'; }
+    if (editItem) { 
+      ok = await updateRecord(editItem.__raw, obj); 
+    } else { 
+      ok = await createRecord(entityType, obj); 
+    }
+    
+    if (ok) { 
+      toast(editItem ? 'Updated!' : 'Created!');
+      overlay.remove(); 
+    } else { 
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+    lucide.createIcons();
   });
+  lucide.createIcons();
+}
+
+function showProductFormModal(editItem) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  
+  const existingVariants = editItem?.variants ? JSON.parse(JSON.stringify(editItem.variants)) : [];
+  let variantsList = [...existingVariants];
+  
+  function renderVariants() {
+    return variantsList.map((v, idx) => `
+      <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 relative">
+        <button type="button" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 remove-variant" data-idx="${idx}">
+          <i data-lucide="x" style="width:16px;height:16px"></i>
+        </button>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Variant Name</label>
+            <input type="text" value="${v.name || ''}" class="variant-name w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200 focus:border-emerald-500" data-idx="${idx}" placeholder="e.g. Red-M">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">SKU</label>
+            <input type="text" value="${v.sku || ''}" class="variant-sku w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200 focus:border-emerald-500" data-idx="${idx}" placeholder="e.g. SKU-001">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Purchase Price (IDR)</label>
+            <input type="number" value="${v.purchase_price || ''}" class="variant-purchase w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200 focus:border-emerald-500" data-idx="${idx}" placeholder="50000">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Selling Price (IDR)</label>
+            <input type="number" value="${v.selling_price || ''}" class="variant-selling w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200 focus:border-emerald-500" data-idx="${idx}" placeholder="100000">
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+  
+  overlay.innerHTML = `
+    <div class="modal-box fade-in max-w-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">${editItem ? 'Edit' : 'Add'} Product</h3>
+        <button class="close-modal text-slate-400 hover:text-white"><i data-lucide="x" style="width:20px;height:20px"></i></button>
+      </div>
+      
+      <form id="productForm" class="space-y-4">
+        <!-- Basic Info -->
+        <div class="space-y-3 pb-4 border-b border-slate-700">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">SKU Code *</label>
+            <input type="text" name="internal_code" value="${editItem?.internal_code || ''}" required class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" placeholder="PROD-001">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Product Name *</label>
+            <input type="text" name="name" value="${editItem?.name || ''}" required class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" placeholder="Product Name">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Category</label>
+              <input type="text" name="category" value="${editItem?.category || ''}" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" placeholder="Electronics">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Unit</label>
+              <input type="text" name="unit" value="${editItem?.unit || ''}" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" placeholder="pcs">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Weight (grams)</label>
+            <input type="number" name="weight" value="${editItem?.weight || ''}" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" placeholder="500">
+          </div>
+        </div>
+        
+        <!-- Variants Section -->
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <label class="block text-sm font-semibold text-slate-300">Variants (SKU + Pricing)</label>
+            <button type="button" id="addVariant" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-2.5 py-1 rounded flex items-center gap-1 transition">
+              <i data-lucide="plus" style="width:12px;height:12px"></i> Add Variant
+            </button>
+          </div>
+          <div id="variantsList" class="space-y-2 max-h-64 overflow-y-auto">
+            ${renderVariants()}
+          </div>
+          ${variantsList.length === 0 ? '<p class="text-xs text-slate-500 italic py-4 text-center">No variants yet. Click "Add Variant" to start.</p>' : ''}
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-700">
+          <button type="button" class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+          <button type="submit" id="saveProductBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition flex items-center gap-2">
+            <i data-lucide="save" style="width:14px;height:14px"></i> Save Product
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  
+  // Add variant button
+  document.getElementById('addVariant').addEventListener('click', () => {
+    variantsList.push({ name: '', sku: '', purchase_price: '', selling_price: '' });
+    updateVariantsUI();
+  });
+  
+  function updateVariantsUI() {
+    const container = document.getElementById('variantsList');
+    container.innerHTML = renderVariants();
+    
+    // Remove variant handlers
+    container.querySelectorAll('.remove-variant').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const idx = parseInt(btn.dataset.idx);
+        variantsList.splice(idx, 1);
+        updateVariantsUI();
+      });
+    });
+    
+    // Update handlers for variant inputs
+    container.querySelectorAll('.variant-name, .variant-sku, .variant-purchase, .variant-selling').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        if (e.target.classList.contains('variant-name')) variantsList[idx].name = e.target.value;
+        if (e.target.classList.contains('variant-sku')) variantsList[idx].sku = e.target.value;
+        if (e.target.classList.contains('variant-purchase')) variantsList[idx].purchase_price = parseFloat(e.target.value) || '';
+        if (e.target.classList.contains('variant-selling')) variantsList[idx].selling_price = parseFloat(e.target.value) || '';
+      });
+    });
+    
+    lucide.createIcons();
+  }
+  
+  // Form submit
+  document.getElementById('productForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fd = new FormData(e.target);
+    const obj = {
+      id: editItem?.id || genId(),
+      internal_code: fd.get('internal_code'),
+      name: fd.get('name'),
+      category: fd.get('category'),
+      unit: fd.get('unit'),
+      weight: parseFloat(fd.get('weight')) || '',
+      variants: variantsList
+    };
+    
+    const btn = document.getElementById('saveProductBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block"></i> Saving...';
+    
+    let ok;
+    if (editItem) {
+      ok = await updateRecord(editItem.__raw, obj);
+    } else {
+      ok = await createRecord('product', obj);
+    }
+    
+    if (ok) {
+      toast(editItem ? 'Product updated!' : 'Product created!');
+      overlay.remove();
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px"></i> Save Product';
+    }
+    lucide.createIcons();
+  });
+  
+  updateVariantsUI();
   lucide.createIcons();
 }
 
@@ -485,7 +852,7 @@ function showImportTemplate(fields, entityType) {
             <li>Download template or prepare your Excel file with these exact columns</li>
             <li>Match your data column headers to template names (case-insensitive)</li>
             <li>Empty rows will be skipped automatically</li>
-            <li>Required fields: <strong>${fields.filter(f => f.required).map(f => f.label).join(', ')}</strong></li>
+            <li>Required fields: <strong>${fields.filter(f => f.required).map(f => f.label).join(', ') || 'None'}</strong></li>
             <li>Max 999 records total in system</li>
           </ul>
         </div>
@@ -494,7 +861,7 @@ function showImportTemplate(fields, entityType) {
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-300">Template Structure:</p>
-            <button id="downloadTemplate" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded flex items-center gap-1.5 transition">
+            <button id="downloadTemplateBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded flex items-center gap-1.5 transition">
               <i data-lucide="download" style="width:12px;height:12px"></i> Download Template
             </button>
           </div>
@@ -549,75 +916,107 @@ function showImportTemplate(fields, entityType) {
       <!-- Actions -->
       <div class="flex justify-between gap-2 pt-4 border-t border-slate-700">
         <button class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
-        <button id="proceedImport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition flex items-center gap-2">
+        <button id="proceedImportBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition flex items-center gap-2">
           <i data-lucide="upload" style="width:14px;height:14px"></i> Select File to Import
         </button>
       </div>
     </div>
   `;
+  
   document.body.appendChild(overlay);
   
-  overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
+  // Attach close handlers
+  overlay.querySelectorAll('.close-modal').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      overlay.remove();
+    });
+  });
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 
-  // Download Template - with proper event delegation
-  setTimeout(() => {
-    const dlBtn = document.getElementById('downloadTemplate');
-    if (dlBtn) {
-      dlBtn.onclick = function(e) {
+  lucide.createIcons();
+  
+  // Wait for DOM to be ready, then attach handlers
+  requestAnimationFrame(() => {
+    // Attach download button handler
+    const downloadBtn = document.getElementById('downloadTemplateBtn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
         
+        const btn = e.target.closest('button');
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" style="width:12px;height:12px;animation:spin 1s linear infinite;display:inline-block"></i> Downloading...';
+        
         try {
-          const ws_data = [fields.map(f => f.label), sampleRow];
-          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+          const isXLSXReady = await window.xlsxReady;
           
-          const wscols = fields.map(() => ({ wch: 18 }));
-          ws['!cols'] = wscols;
-          
-          // Format header
-          for (let i = 0; i < fields.length; i++) {
-            const cell = XLSX.utils.encode_cell({ r: 0, c: i });
-            if (!ws[cell]) continue;
-            ws[cell].s = {
-              font: { bold: true, color: { rgb: 'FFFFFF' } },
-              fill: { fgColor: { rgb: '1E293B' } },
-              alignment: { horizontal: 'center', vertical: 'center' },
-              border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
-            };
+          if (!isXLSXReady || typeof XLSX === 'undefined') {
+            toast('Excel library not available. Please refresh and try again.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="download" style="width:12px;height:12px"></i> Download Template';
+            lucide.createIcons();
+            return;
           }
           
-          // Format sample row (light gray)
-          for (let i = 0; i < fields.length; i++) {
-            const cell = XLSX.utils.encode_cell({ r: 1, c: i });
-            if (!ws[cell]) continue;
-            ws[cell].s = {
-              fill: { fgColor: { rgb: 'F1F5F9' } },
-              alignment: { horizontal: 'left', vertical: 'center' },
-              border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
-            };
-          }
+          // Generate sample row
+          const sampleRow = fields.map(f => {
+            if (f.type === 'number') return '1000';
+            if (f.type === 'select') return f.options?.[0] || 'option1';
+            if (f.key.includes('date') || f.key === 'order_date') return new Date().toISOString().slice(0, 10);
+            if (f.key.includes('price') || f.key.includes('cost')) return '50000';
+            if (f.key.includes('qty')) return '5';
+            if (f.key === 'internal_code' || f.key === 'external_order_id') return 'CODE-001';
+            if (f.key === 'name') return 'Sample Item';
+            return 'Sample Value';
+          });
           
           const wb = XLSX.utils.book_new();
+          const ws_data = [fields.map(f => f.label), sampleRow];
+          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+          ws['!cols'] = fields.map(() => ({ wch: 18 }));
+          
+          for (let r = 0; r < 2; r++) {
+            for (let c = 0; c < fields.length; c++) {
+              const addr = XLSX.utils.encode_cell({ r, c });
+              if (!ws[addr]) {
+                ws[addr] = { v: r === 0 ? fields[c].label : sampleRow[c], t: 's' };
+              }
+              if (r === 0) {
+                ws[addr].s = { font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 }, fill: { fgColor: { rgb: '1E293B' } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: { top: { style: 'thin', color: { rgb: '64748B' } }, bottom: { style: 'thin', color: { rgb: '64748B' } }, left: { style: 'thin', color: { rgb: '64748B' } }, right: { style: 'thin', color: { rgb: '64748B' } } } };
+              } else {
+                ws[addr].s = { fill: { fgColor: { rgb: 'F1F5F9' } }, alignment: { horizontal: 'left', vertical: 'center' }, border: { top: { style: 'thin', color: { rgb: 'E2E8F0' } }, bottom: { style: 'thin', color: { rgb: 'E2E8F0' } }, left: { style: 'thin', color: { rgb: 'E2E8F0' } }, right: { style: 'thin', color: { rgb: 'E2E8F0' } } } };
+              }
+            }
+          }
+          
           XLSX.utils.book_append_sheet(wb, ws, 'Template');
           XLSX.writeFile(wb, `${entityType}_TEMPLATE.xlsx`);
-          toast('✅ Template downloaded');
+          toast('✅ Template downloaded!');
+          
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="download" style="width:12px;height:12px"></i> Download Template';
         } catch (err) {
-          console.error('Download error:', err);
-          toast('Download gagal', 'error');
+          console.error('Download template error:', err);
+          toast('Download failed: ' + (err.message || 'Unknown error'), 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="download" style="width:12px;height:12px"></i> Download Template';
         }
-        return false;
-      };
+      });
     }
-  }, 100);
 
-  // Proceed with file selection
-  document.getElementById('proceedImport').addEventListener('click', () => {
-    overlay.remove();
-    document.getElementById('fileInput').click();
+    // Attach proceed button handler
+    const proceedBtn = document.getElementById('proceedImportBtn');
+    if (proceedBtn) {
+      proceedBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        overlay.remove();
+        document.getElementById('fileInput').click();
+      });
+    }
   });
-
-  lucide.createIcons();
 }
 
 function showDeleteConfirm(item) {
@@ -674,11 +1073,11 @@ function renderDashboard() {
       <!-- KPI Grid -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         ${kpiCard('shopping-cart', 'Total Orders', fmt(totalOrders), 'emerald')}
-        ${kpiCard('banknote', 'Revenue', 'Rp ' + fmtK(totalRevenue), 'cyan')}
-        ${kpiCard('wallet', 'Net Settlement', 'Rp ' + fmtK(totalSettlement), 'violet')}
+        ${kpiCard('banknote', 'Revenue', fmtIDR(totalRevenue), 'cyan')}
+        ${kpiCard('wallet', 'Net Settlement', fmtIDR(totalSettlement), 'violet')}
         ${kpiCard('trending-up', 'Gross Margin', grossMargin + '%', parseFloat(grossMargin) > 0 ? 'emerald' : 'red')}
         ${kpiCard('truck', 'Delivered', fmt(deliveredOrders), 'blue')}
-        ${kpiCard('megaphone', 'Ad Spend', 'Rp ' + fmtK(totalAdSpend), 'amber')}
+        ${kpiCard('megaphone', 'Ad Spend', fmtIDR(totalAdSpend), 'amber')}
         ${kpiCard('target', 'ROAS', roas + 'x', parseFloat(roas) > 2 ? 'emerald' : 'red')}
         ${kpiCard('undo-2', 'Returns', fmt(returns.length), 'rose')}
       </div>
@@ -691,7 +1090,7 @@ function renderDashboard() {
           <p class="text-xs text-slate-500 mt-1">Total SKUs registered</p>
           ${products.length === 0 ? '<p class="text-xs text-slate-600 mt-3">Add products to get started →</p>' : `
             <div class="mt-3 space-y-1 max-h-32 overflow-y-auto">${products.slice(0, 5).map(p => `
-              <div class="flex justify-between text-xs"><span class="text-slate-300 truncate">${p.name || p.internal_code}</span><span class="text-emerald-400 font-mono">Rp ${fmt(p.selling_price)}</span></div>
+              <div class="flex justify-between text-xs"><span class="text-slate-300 truncate">${p.name || p.internal_code}</span><span class="text-emerald-400 font-mono">${fmtIDR(p.variants?.[0]?.selling_price || p.selling_price)}</span></div>
             `).join('')}${products.length > 5 ? `<p class="text-xs text-slate-600">+${products.length - 5} more</p>` : ''}</div>
           `}
         </div>
@@ -704,7 +1103,7 @@ function renderDashboard() {
               ${feeRow('Shipping', settlements.reduce((s,r) => s + (parseFloat(r.shipping_cost)||0), 0))}
               ${feeRow('Affiliate', settlements.reduce((s,r) => s + (parseFloat(r.affiliate_fee)||0), 0))}
               ${feeRow('Ads Fee', settlements.reduce((s,r) => s + (parseFloat(r.ads_fee)||0), 0))}
-              <div class="flex justify-between text-sm font-semibold border-t border-slate-700 pt-2 mt-2"><span class="text-slate-300">Total Fees</span><span class="text-red-400">Rp ${fmt(totalFees)}</span></div>
+              <div class="flex justify-between text-sm font-semibold border-t border-slate-700 pt-2 mt-2"><span class="text-slate-300">Total Fees</span><span class="text-red-400">${fmtIDR(totalFees)}</span></div>
             </div>
           `}
         </div>
@@ -734,7 +1133,7 @@ function kpiCard(icon, label, value, color) {
 }
 
 function feeRow(label, amount) {
-  return `<div class="flex justify-between text-xs"><span class="text-slate-400">${label}</span><span class="text-slate-300 font-mono">Rp ${fmt(amount)}</span></div>`;
+  return `<div class="flex justify-between text-xs"><span class="text-slate-400">${label}</span><span class="text-slate-300 font-mono">${fmtIDR(amount)}</span></div>`;
 }
 
 // ============ SALES ORDERS ============
@@ -893,10 +1292,10 @@ function renderAds() {
   main.innerHTML = `
     <div class="fade-in space-y-4">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        ${kpiCard('megaphone', 'Total Spend', 'Rp ' + fmtK(totalSpend), 'amber')}
+        ${kpiCard('megaphone', 'Total Spend', fmtIDR(totalSpend), 'amber')}
         ${kpiCard('mouse-pointer', 'Total Clicks', fmt(totalClicks), 'blue')}
         ${kpiCard('target', 'Conversions', fmt(totalConversions), 'emerald')}
-        ${kpiCard('calculator', 'Cost/Order', 'Rp ' + fmt(Math.round(costPerOrder)), 'violet')}
+        ${kpiCard('calculator', 'Cost/Order', fmtIDR(Math.round(costPerOrder)), 'violet')}
       </div>
 
       <!-- Tabs -->
@@ -1065,5 +1464,5 @@ async function init() {
 
 init();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec92425147ecdd9',t:'MTc3NjIzNzEzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec9569b85348beb',t:'MTc3NjIzOTIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
