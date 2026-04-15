@@ -1,1683 +1,1055 @@
 <!doctype html>
-<html lang="id" class="h-full">
+<html lang="en" class="h-full">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERP Mini</title>
+  <title>E-Commerce ERP</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
   <script>
-tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif'],mono:['"JetBrains Mono"','monospace']},colors:{navy:{50:'#f0f4f8',100:'#d9e2ec',200:'#bcccdc',300:'#9fb3c8',400:'#829ab1',500:'#627d98',600:'#486581',700:'#334e68',800:'#243b53',900:'#102a43',950:'#0a1929'},accent:{50:'#fff8f0',100:'#ffe8cc',200:'#ffd199',300:'#ffba66',400:'#ffa333',500:'#ff8c00',600:'#cc7000',700:'#995400',800:'#663800',900:'#331c00'}}}}}
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace']
+      }
+    }
+  }
+}
 </script>
   <style>
-html,body{height:100%;margin:0;font-family:'Plus Jakarta Sans',sans-serif}
-.sidebar-item{transition:all .15s ease}
-.sidebar-item:hover{background:rgba(255,140,0,.1);color:#ff8c00}
-.sidebar-item.active{background:rgba(255,140,0,.15);color:#ff8c00;border-right:3px solid #ff8c00}
-.card-hover{transition:all .2s ease}
-.card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.1)}
-.fade-in{animation:fadeIn .3s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.status-badge{padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.tbl{width:100%;border-collapse:collapse}
-.tbl th{text-align:left;padding:10px 12px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #d9e2ec;color:#627d98}
-.tbl td{padding:10px 12px;font-size:13px;border-bottom:1px solid #f0f4f8}
-.tbl tr:hover td{background:#f8fafc}
-.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:#ff8c00;color:#fff}.btn-primary:hover{background:#cc7000}
-.btn-secondary{background:#f0f4f8;color:#334e68}.btn-secondary:hover{background:#d9e2ec}
-.btn-danger{background:#fee2e2;color:#dc2626}.btn-danger:hover{background:#fecaca}
-.btn-success{background:#d1fae5;color:#059669}.btn-success:hover{background:#a7f3d0}
-.input-field{width:100%;padding:9px 12px;border:1.5px solid #d9e2ec;border-radius:8px;font-size:13px;font-family:inherit;transition:border-color .15s}
-.input-field:focus{outline:none;border-color:#ff8c00;box-shadow:0 0 0 3px rgba(255,140,0,.1)}
-select.input-field{appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23627d98' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;padding-right:32px}
-.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,25,41,.6);display:flex;align-items:center;justify-content:center;z-index:1000}
-.modal-box{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:640px;max-height:85%;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25)}
-.tab-btn{padding:8px 16px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#627d98;border-bottom:2px solid transparent;transition:all .15s}
-.tab-btn.active{color:#ff8c00;border-bottom-color:#ff8c00}
-.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;font-weight:600;z-index:2000;animation:slideIn .3s ease}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.metric-card{background:linear-gradient(135deg,#102a43,#243b53);color:#fff;border-radius:16px;padding:20px}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#f0f4f8}::-webkit-scrollbar-thumb{background:#bcccdc;border-radius:3px}
-.line-item-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f0f4f8}
-.line-item-header{font-size:11px;font-weight:600;text-transform:uppercase;color:#627d98;letter-spacing:.5px}
+html, body { height: 100%; margin: 0; }
+.erp-wrapper { height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: column; }
+.sidebar-item { transition: all 0.15s ease; }
+.sidebar-item:hover, .sidebar-item.active { background: rgba(255,255,255,0.08); }
+.sidebar-item.active { border-left: 3px solid #6ee7b7; }
+.card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.fade-in { animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.tab-btn { transition: all 0.15s ease; }
+.tab-btn.active { background: #065f46; color: #6ee7b7; }
+.toast-msg { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 12px 20px; border-radius: 8px; font-size: 14px; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
+@keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+@keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+input, select, textarea { font-family: 'DM Sans', sans-serif; }
+table { border-collapse: collapse; }
+th { position: sticky; top: 0; z-index: 2; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; }
+.modal-box { background: #1e293b; border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 </style>
   <style>body { box-sizing: border-box; }</style>
  </head>
- <body class="h-full bg-navy-50">
-  <div id="app" class="h-full flex overflow-auto">
-   <!-- Sidebar -->
-   <aside id="sidebar" class="w-60 bg-navy-950 text-navy-300 flex-shrink-0 flex flex-col" style="min-height:100%">
-    <div class="p-5 border-b border-navy-800">
-     <h1 id="brand-name" class="text-lg font-800 text-white tracking-tight">ERP Mini</h1>
-     <p id="brand-tagline" class="text-[11px] text-navy-400 mt-0.5">Sistem Manajemen Usaha</p>
+ <body class="h-full bg-slate-950 text-slate-200 font-sans">
+  <div class="erp-wrapper" id="app"><!-- SIDEBAR + MAIN -->
+   <div class="flex h-full w-full"><!-- Sidebar -->
+    <nav id="sidebar" class="w-56 flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col h-full overflow-y-auto">
+     <div class="p-4 border-b border-slate-800">
+      <h1 id="appTitle" class="text-lg font-bold text-emerald-400 truncate">E-Commerce ERP</h1>
+      <p id="companyName" class="text-xs text-slate-500 mt-0.5 truncate">Your Company</p>
+     </div>
+     <div class="flex-1 py-2" id="navMenu"></div>
+     <div class="p-3 border-t border-slate-800 text-xs text-slate-600 text-center">
+      v1.0
+     </div>
+    </nav><!-- Main -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden"><!-- Top bar -->
+     <header class="h-12 flex-shrink-0 bg-slate-900 border-b border-slate-800 flex items-center px-4 justify-between"><button id="mobileMenuBtn" class="lg:hidden p-1 text-slate-400"><i data-lucide="menu" style="width:20px;height:20px"></i></button>
+      <h2 id="pageTitle" class="text-sm font-semibold text-slate-300"></h2>
+      <div class="flex items-center gap-3"><span id="recordCount" class="text-xs text-slate-500 font-mono"></span>
+      </div>
+     </header><!-- Content -->
+     <main id="mainContent" class="flex-1 overflow-y-auto p-4"></main>
     </div>
-    <nav class="flex-1 py-3 overflow-y-auto">
-     <div class="px-3 mb-1"><span class="text-[10px] font-700 uppercase tracking-widest text-navy-600 px-3">Menu Utama</span>
-     </div><a onclick="nav('dashboard')" class="sidebar-item active flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="dashboard"><i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>Dashboard</a>
-     <div class="px-3 mt-4 mb-1"><span class="text-[10px] font-700 uppercase tracking-widest text-navy-600 px-3">Master Data</span>
-     </div><a onclick="nav('products')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="products"><i data-lucide="package" style="width:18px;height:18px"></i>Produk</a> <a onclick="nav('customers')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="customers"><i data-lucide="users" style="width:18px;height:18px"></i>Customer</a> <a onclick="nav('vendors')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="vendors"><i data-lucide="truck" style="width:18px;height:18px"></i>Vendor</a> <a onclick="nav('coa')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="coa"><i data-lucide="book-open" style="width:18px;height:18px"></i>Chart of Accounts</a>
-     <div class="px-3 mt-4 mb-1"><span class="text-[10px] font-700 uppercase tracking-widest text-navy-600 px-3">Transaksi</span>
-     </div><a onclick="nav('sales')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="sales"><i data-lucide="shopping-cart" style="width:18px;height:18px"></i>Sales Order</a> <a onclick="nav('returns')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="returns"><i data-lucide="undo-2" style="width:18px;height:18px"></i>Retur Barang</a> <a onclick="nav('purchases')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="purchases"><i data-lucide="clipboard-list" style="width:18px;height:18px"></i>Purchase Order</a> <a onclick="nav('inventory')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="inventory"><i data-lucide="warehouse" style="width:18px;height:18px"></i>Inventory</a>
-     <div class="px-3 mt-4 mb-1"><span class="text-[10px] font-700 uppercase tracking-widest text-navy-600 px-3">Keuangan</span>
-     </div><a onclick="nav('invoices')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="invoices"><i data-lucide="file-text" style="width:18px;height:18px"></i>Invoice</a> <a onclick="nav('payments')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="payments"><i data-lucide="credit-card" style="width:18px;height:18px"></i>Pembayaran</a> <a onclick="nav('accounting')" class="sidebar-item flex items-center gap-3 px-6 py-2.5 cursor-pointer text-sm" data-nav="accounting"><i data-lucide="calculator" style="width:18px;height:18px"></i>Akuntansi</a>
-    </nav>
-   </aside><!-- Main Content -->
-   <main class="flex-1 overflow-y-auto" style="min-height:100%">
-    <div id="main-content" class="p-6 max-w-7xl mx-auto"></div>
-   </main>
-  </div><!-- Modal Container -->
-  <div id="modal-container"></div><!-- Toast Container -->
-  <div id="toast-container"></div>
+   </div>
+  </div><!-- Toast container -->
+  <div id="toastContainer"></div>
   <script>
-// ============================================================
-// GLOBAL STATE
-// ============================================================
-let ALL_DATA = [];
+// ============ STATE ============
+let allRecords = [];
 let currentPage = 'dashboard';
-let isInitialized = false;
+const LIMIT = 999;
 
 const defaultConfig = {
-  company_name: 'ERP Mini',
-  tagline: 'Sistem Manajemen Usaha',
-  background_color: '#f0f4f8',
-  surface_color: '#ffffff',
-  text_color: '#102a43',
-  primary_action_color: '#ff8c00',
-  secondary_action_color: '#334e68',
-  font_family: 'Plus Jakarta Sans',
+  app_title: 'E-Commerce ERP',
+  company_name: 'Your Company',
+  bg_color: '#020617',
+  surface_color: '#1e293b',
+  text_color: '#e2e8f0',
+  primary_color: '#6ee7b7',
+  secondary_color: '#334155',
+  font_family: 'DM Sans',
   font_size: 14
 };
 
-// ============================================================
-// ELEMENT SDK INIT
-// ============================================================
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => {
-    const c = k => config[k] || defaultConfig[k];
-    document.getElementById('brand-name').textContent = c('company_name');
-    document.getElementById('brand-tagline').textContent = c('tagline');
-    document.body.style.fontFamily = `${c('font_family')}, Plus Jakarta Sans, sans-serif`;
-    document.querySelector('.bg-navy-50').style.background = c('background_color');
-  },
-  mapToCapabilities: (config) => {
-    const mc = (key) => ({
-      get: () => config[key] || defaultConfig[key],
-      set: (v) => { config[key] = v; window.elementSdk.setConfig({[key]: v}); }
-    });
-    return {
-      recolorables: [mc('background_color'), mc('surface_color'), mc('text_color'), mc('primary_action_color'), mc('secondary_action_color')],
-      borderables: [],
-      fontEditable: mc('font_family'),
-      fontSizeable: mc('font_size')
-    };
-  },
-  mapToEditPanelValues: (config) => new Map([
-    ['company_name', config.company_name || defaultConfig.company_name],
-    ['tagline', config.tagline || defaultConfig.tagline]
-  ])
-});
+// ============ NAV STRUCTURE ============
+const navSections = [
+  { id: 'dashboard', icon: 'layout-dashboard', label: 'Dashboard' },
+  { id: 'products', icon: 'package', label: 'Products' },
+  { id: 'channels', icon: 'store', label: 'Channels' },
+  { id: 'suppliers', icon: 'truck', label: 'Suppliers' },
+  { id: 'customers', icon: 'users', label: 'Customers' },
+  { id: 'sales', icon: 'shopping-cart', label: 'Sales Orders' },
+  { id: 'settlements', icon: 'banknote', label: 'Settlements' },
+  { id: 'purchases', icon: 'clipboard-list', label: 'Purchases' },
+  { id: 'inventory', icon: 'warehouse', label: 'Inventory' },
+  { id: 'returns', icon: 'undo-2', label: 'Returns' },
+  { id: 'ads', icon: 'megaphone', label: 'Ads' },
+  { id: 'accounting', icon: 'calculator', label: 'Accounting' },
+];
 
-// ============================================================
-// DATA SDK INIT
-// ============================================================
-const dataHandler = {
-  onDataChanged(data) {
-    ALL_DATA = data;
-    if (isInitialized) renderCurrentPage();
-  }
-};
-
-(async () => {
-  const r = await window.dataSdk.init(dataHandler);
-  if (r.isOk) {
-    isInitialized = true;
-    // Seed default COA if none exist
-    renderCurrentPage();
-  }
-})();
-
-// ============================================================
-// HELPERS
-// ============================================================
-function getByType(type) { return ALL_DATA.filter(d => d.entity_type === type); }
-function getByTypeAndSub(type, sub) { return ALL_DATA.filter(d => d.entity_type === type && d.sub_type === sub); }
-function parseData(record) { try { return JSON.parse(record.data_json || '{}'); } catch { return {}; } }
-function fmt(n) { return new Intl.NumberFormat('id-ID').format(Math.round(n || 0)); }
-function fmtCurrency(n) { return 'Rp ' + fmt(n); }
-function fmtDate(d) { if (!d) return '-'; return new Date(d).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}); }
-function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
-function genNumber(prefix, list) { const n = list.length + 1; return `${prefix}-${String(n).padStart(4,'0')}`; }
-
-function statusColor(s) {
-  const map = {
-    'Draft':'bg-gray-100 text-gray-600','Confirmed':'bg-blue-100 text-blue-700','Sent':'bg-indigo-100 text-indigo-700',
-    'Partially Delivered':'bg-yellow-100 text-yellow-700','Delivered':'bg-green-100 text-green-700',
-    'Partially Received':'bg-yellow-100 text-yellow-700','Received':'bg-green-100 text-green-700',
-    'Invoiced':'bg-purple-100 text-purple-700','Billed':'bg-purple-100 text-purple-700',
-    'Done':'bg-emerald-100 text-emerald-700','Cancelled':'bg-red-100 text-red-600',
-    'Posted':'bg-blue-100 text-blue-700','Partially Paid':'bg-yellow-100 text-yellow-700',
-    'Paid':'bg-green-100 text-green-700','Aktif':'bg-green-100 text-green-700','Nonaktif':'bg-gray-100 text-gray-500'
-  };
-  return map[s] || 'bg-gray-100 text-gray-600';
-}
+// ============ HELPERS ============
+function getByType(type) { return allRecords.filter(r => r.entity_type === type).map(r => { try { return { ...JSON.parse(r.data_json), __backendId: r.__backendId, __raw: r }; } catch { return null; } }).filter(Boolean); }
 
 function toast(msg, type='success') {
-  const colors = {success:'bg-emerald-600',error:'bg-red-600',info:'bg-blue-600'};
   const el = document.createElement('div');
-  el.className = `toast ${colors[type]||colors.info}`;
+  el.className = `toast-msg ${type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`;
   el.textContent = msg;
-  document.getElementById('toast-container').appendChild(el);
+  document.getElementById('toastContainer').appendChild(el);
   setTimeout(() => el.remove(), 3000);
 }
 
-function closeModal() { document.getElementById('modal-container').innerHTML = ''; }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-function showModal(title, contentHtml, width) {
-  document.getElementById('modal-container').innerHTML = `
-    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-      <div class="modal-box" ${width?`style="max-width:${width}px"`:''}>
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-700 text-navy-900">${title}</h3>
-          <button onclick="closeModal()" class="text-navy-400 hover:text-navy-700"><i data-lucide="x" style="width:20px;height:20px"></i></button>
-        </div>
-        <div>${contentHtml}</div>
-      </div>
-    </div>`;
+function fmt(n) { return new Intl.NumberFormat('id-ID').format(n || 0); }
+function fmtK(n) { if (!n) return '0'; if (n >= 1e9) return (n/1e9).toFixed(1)+'B'; if (n >= 1e6) return (n/1e6).toFixed(1)+'M'; if (n >= 1e3) return (n/1e3).toFixed(1)+'K'; return fmt(n); }
+
+// ============ DATA SDK ============
+const dataHandler = {
+  onDataChanged(data) {
+    allRecords = data;
+    document.getElementById('recordCount').textContent = `${data.length}/999 records`;
+    renderCurrentPage();
+  }
+};
+
+async function createRecord(entityType, dataObj) {
+  if (allRecords.length >= LIMIT) { toast('Record limit (999) reached. Delete some records first.', 'error'); return false; }
+  const result = await window.dataSdk.create({
+    entity_type: entityType,
+    data_json: JSON.stringify(dataObj),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    sort_key: entityType + '_' + Date.now()
+  });
+  if (!result.isOk) { toast('Save failed', 'error'); return false; }
+  return true;
+}
+
+async function updateRecord(raw, dataObj) {
+  const result = await window.dataSdk.update({ ...raw, data_json: JSON.stringify(dataObj), updated_at: new Date().toISOString() });
+  if (!result.isOk) { toast('Update failed', 'error'); return false; }
+  return true;
+}
+
+async function deleteRecord(raw) {
+  const result = await window.dataSdk.delete(raw);
+  if (!result.isOk) { toast('Delete failed', 'error'); return false; }
+  return true;
+}
+
+// ============ ELEMENT SDK ============
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      const c = { ...defaultConfig, ...config };
+      document.getElementById('appTitle').textContent = c.app_title;
+      document.getElementById('companyName').textContent = c.company_name;
+      document.body.style.fontFamily = `${c.font_family}, DM Sans, sans-serif`;
+      document.body.style.backgroundColor = c.bg_color;
+      document.body.style.color = c.text_color;
+      document.body.style.fontSize = c.font_size + 'px';
+      document.getElementById('sidebar').style.backgroundColor = c.surface_color;
+      document.querySelectorAll('.kpi-card').forEach(el => el.style.backgroundColor = c.surface_color);
+      document.getElementById('appTitle').style.color = c.primary_color;
+      document.querySelectorAll('.sidebar-item.active').forEach(el => el.style.borderLeftColor = c.primary_color);
+    },
+    mapToCapabilities: (config) => {
+      const c = { ...defaultConfig, ...config };
+      const mkColor = (key) => ({ get: () => c[key] || defaultConfig[key], set: (v) => { c[key] = v; window.elementSdk.setConfig({ [key]: v }); } });
+      return {
+        recolorables: [mkColor('bg_color'), mkColor('surface_color'), mkColor('text_color'), mkColor('primary_color'), mkColor('secondary_color')],
+        borderables: [],
+        fontEditable: { get: () => c.font_family || defaultConfig.font_family, set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+        fontSizeable: { get: () => c.font_size || defaultConfig.font_size, set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+      };
+    },
+    mapToEditPanelValues: (config) => {
+      const c = { ...defaultConfig, ...config };
+      return new Map([['app_title', c.app_title], ['company_name', c.company_name]]);
+    }
+  });
+}
+
+// ============ NAVIGATION ============
+function buildNav() {
+  const menu = document.getElementById('navMenu');
+  menu.innerHTML = navSections.map(s => `
+    <button class="sidebar-item w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-400 ${currentPage === s.id ? 'active text-emerald-300' : ''}" data-page="${s.id}">
+      <i data-lucide="${s.icon}" style="width:16px;height:16px"></i>
+      <span>${s.label}</span>
+    </button>
+  `).join('');
+  menu.querySelectorAll('.sidebar-item').forEach(btn => {
+    btn.addEventListener('click', () => { currentPage = btn.dataset.page; buildNav(); renderCurrentPage(); });
+  });
   lucide.createIcons();
-}
-
-async function createRecord(entity_type, data, sub_type='', ref_id='', status='') {
-  if (ALL_DATA.length >= 999) { toast('Batas 999 record tercapai!','error'); return false; }
-  const r = await window.dataSdk.create({
-    entity_type, data_json: JSON.stringify(data), sub_type, ref_id, status,
-    created_at: new Date().toISOString(), updated_at: new Date().toISOString()
-  });
-  if (r.isOk) return true;
-  toast('Gagal menyimpan data','error'); return false;
-}
-
-async function updateRecord(record, data, status) {
-  const updates = { ...record, data_json: JSON.stringify(data), updated_at: new Date().toISOString() };
-  if (status !== undefined) updates.status = status;
-  const r = await window.dataSdk.update(updates);
-  if (!r.isOk) toast('Gagal update data','error');
-  return r.isOk;
-}
-
-async function deleteRecord(record) {
-  const r = await window.dataSdk.delete(record);
-  if (!r.isOk) toast('Gagal hapus data','error');
-  return r.isOk;
-}
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-function nav(page) {
-  currentPage = page;
-  document.querySelectorAll('.sidebar-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.nav === page);
-  });
-  renderCurrentPage();
 }
 
 function renderCurrentPage() {
-  const el = document.getElementById('main-content');
-  const renderers = {
-    dashboard: renderDashboard, products: renderProducts, customers: renderCustomers,
-    vendors: renderVendors, coa: renderCOA, sales: renderSales, returns: renderReturns, purchases: renderPurchases,
-    inventory: renderInventory, invoices: renderInvoices, payments: renderPayments, accounting: renderAccounting
-  };
-  (renderers[currentPage] || renderDashboard)(el);
+  const main = document.getElementById('mainContent');
+  document.getElementById('pageTitle').textContent = navSections.find(s => s.id === currentPage)?.label || '';
+  const renderers = { dashboard: renderDashboard, products: () => renderCRUD('product', 'Products', productFields), channels: () => renderCRUD('channel', 'Channels', channelFields), suppliers: () => renderCRUD('supplier', 'Suppliers', supplierFields), customers: () => renderCRUD('customer', 'Customers', customerFields), sales: renderSales, settlements: renderSettlements, purchases: renderPurchases, inventory: renderInventory, returns: renderReturns, ads: renderAds, accounting: renderAccounting };
+  (renderers[currentPage] || renderDashboard)();
   lucide.createIcons();
 }
 
-// ============================================================
-// DASHBOARD
-// ============================================================
-function renderDashboard(el) {
-  const products = getByType('product');
-  const customers = getByType('customer');
-  const vendors = getByType('vendor');
-  const salesOrders = getByType('sales_order');
-  const purchaseOrders = getByType('purchase_order');
-  const invoices = getByType('invoice');
-  const bills = getByType('vendor_bill');
-  const payments = getByType('payment');
-
-  // Calculate totals
-  let totalSales = 0, totalPurchases = 0, totalReceivable = 0, totalPayable = 0;
-  invoices.forEach(inv => {
-    const d = parseData(inv);
-    if (inv.status !== 'Cancelled') {
-      totalSales += (d.total || 0);
-      if (inv.status !== 'Paid') totalReceivable += (d.total || 0) - (d.paid_amount || 0);
-    }
-  });
-  bills.forEach(b => {
-    const d = parseData(b);
-    if (b.status !== 'Cancelled') {
-      totalPurchases += (d.total || 0);
-      if (b.status !== 'Paid') totalPayable += (d.total || 0) - (d.paid_amount || 0);
-    }
-  });
-
-  // Low stock
-  const lowStockItems = products.filter(p => {
-    const d = parseData(p);
-    if (d.product_type === 'Jasa') return false;
-    const stock = calcStock(d.sku);
-    return stock <= (d.min_stock || 0);
-  });
-
-  // COD stats (where payment_method = 'COD')
-  const codInvoices = invoices.filter(inv => inv.status !== 'Cancelled' && parseData(inv).payment_method === 'COD');
-  const codReceivable = codInvoices.filter(i => i.status !== 'Paid').reduce((s, inv) => {
-    const d = parseData(inv);
-    return s + ((d.total || 0) - (d.paid_amount || 0));
-  }, 0);
-
-  const returns = getByType('return_item');
-
-  el.innerHTML = `
-    <div class="fade-in">
-      <h2 class="text-2xl font-800 text-navy-900 mb-6">Dashboard</h2>
-      <div class="grid grid-cols-4 gap-4 mb-6">
-        <div class="metric-card"><p class="text-xs text-navy-300 font-600 uppercase tracking-wider">Total Penjualan</p><p class="text-2xl font-800 mt-1">${fmtCurrency(totalSales)}</p><p class="text-xs text-navy-400 mt-1">${invoices.length} invoice</p></div>
-        <div class="metric-card"><p class="text-xs text-navy-300 font-600 uppercase tracking-wider">Total Pembelian</p><p class="text-2xl font-800 mt-1">${fmtCurrency(totalPurchases)}</p><p class="text-xs text-navy-400 mt-1">${bills.length} bill</p></div>
-        <div class="metric-card" style="background:linear-gradient(135deg,#065f46,#047857)"><p class="text-xs text-emerald-200 font-600 uppercase tracking-wider">COD Tertunda</p><p class="text-2xl font-800 mt-1">${fmtCurrency(codReceivable)}</p><p class="text-xs text-emerald-300 mt-1">${codInvoices.filter(i => i.status !== 'Paid').length} pesanan</p></div>
-        <div class="metric-card" style="background:linear-gradient(135deg,#991b1b,#dc2626)"><p class="text-xs text-red-200 font-600 uppercase tracking-wider">Retur Tertunda</p><p class="text-2xl font-800 mt-1">${returns.filter(r => r.status !== 'Completed').length}</p><p class="text-xs text-red-300 mt-1">item</p></div>
-      </div>
-      <div class="grid grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-4 border border-navy-100"><p class="text-xs text-navy-500 font-600">Produk</p><p class="text-xl font-700 text-navy-900">${products.length}</p></div>
-        <div class="bg-white rounded-xl p-4 border border-navy-100"><p class="text-xs text-navy-500 font-600">Customer</p><p class="text-xl font-700 text-navy-900">${customers.length}</p></div>
-        <div class="bg-white rounded-xl p-4 border border-navy-100"><p class="text-xs text-navy-500 font-600">Sales Order</p><p class="text-xl font-700 text-navy-900">${salesOrders.length}</p></div>
-        <div class="bg-white rounded-xl p-4 border border-navy-100"><p class="text-xs text-navy-500 font-600">Purchase Order</p><p class="text-xl font-700 text-navy-900">${purchaseOrders.length}</p></div>
-      </div>
-      ${lowStockItems.length ? `
-      <div class="bg-white rounded-xl p-5 border border-navy-100 mb-6">
-        <h3 class="font-700 text-navy-900 mb-3 flex items-center gap-2"><i data-lucide="alert-triangle" style="width:18px;height:18px;color:#dc2626"></i>Stok Rendah</h3>
-        <table class="tbl"><thead><tr><th>SKU</th><th>Produk</th><th>Stok</th><th>Min. Stok</th></tr></thead><tbody>
-        ${lowStockItems.map(p => { const d=parseData(p); const s=calcStock(d.sku); return `<tr><td class="font-mono text-xs">${d.sku||'-'}</td><td>${d.name||'-'}</td><td class="font-600 ${s<=0?'text-red-600':'text-yellow-600'}">${fmt(s)}</td><td>${fmt(d.min_stock||0)}</td></tr>`; }).join('')}
-        </tbody></table>
-      </div>` : ''}
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white rounded-xl p-5 border border-navy-100">
-          <h3 class="font-700 text-navy-900 mb-3">Sales Order Terbaru</h3>
-          ${salesOrders.length ? `<table class="tbl"><thead><tr><th>No</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>
-          ${salesOrders.slice(-5).reverse().map(so => { const d=parseData(so); return `<tr><td class="font-mono text-xs">${d.number||'-'}</td><td>${d.customer_name||'-'}</td><td class="font-600">${fmtCurrency(d.total)}</td><td><span class="status-badge ${statusColor(so.status)}">${so.status}</span></td></tr>`; }).join('')}
-          </tbody></table>` : '<p class="text-sm text-navy-400">Belum ada sales order</p>'}
-        </div>
-        <div class="bg-white rounded-xl p-5 border border-navy-100">
-          <h3 class="font-700 text-navy-900 mb-3">Purchase Order Terbaru</h3>
-          ${purchaseOrders.length ? `<table class="tbl"><thead><tr><th>No</th><th>Vendor</th><th>Total</th><th>Status</th></tr></thead><tbody>
-          ${purchaseOrders.slice(-5).reverse().map(po => { const d=parseData(po); return `<tr><td class="font-mono text-xs">${d.number||'-'}</td><td>${d.vendor_name||'-'}</td><td class="font-600">${fmtCurrency(d.total)}</td><td><span class="status-badge ${statusColor(po.status)}">${po.status}</span></td></tr>`; }).join('')}
-          </tbody></table>` : '<p class="text-sm text-navy-400">Belum ada purchase order</p>'}
-        </div>
-      </div>
-    </div>`;
-}
-
-// ============================================================
-// PRODUCTS
-// ============================================================
-function renderProducts(el) {
-  const products = getByType('product');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Produk</h2>
-        <button class="btn btn-primary" onclick="showProductForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Tambah Produk</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${products.length ? `<table class="tbl"><thead><tr><th>SKU</th><th>Nama</th><th>Kategori</th><th>Tipe</th><th>Satuan</th><th>Harga Jual</th><th>Harga Beli</th><th>Stok</th><th>Status</th><th></th></tr></thead><tbody>
-        ${products.map(p => { const d=parseData(p); const stock=d.product_type==='Jasa'?'-':fmt(calcStock(d.sku));
-          return `<tr><td class="font-mono text-xs font-600">${d.sku||'-'}</td><td class="font-600">${d.name||'-'}</td><td>${d.category||'-'}</td><td>${d.product_type||'-'}</td><td>${d.unit||'-'}</td><td class="font-mono">${fmtCurrency(d.sell_price)}</td><td class="font-mono">${fmtCurrency(d.buy_price)}</td><td class="font-600">${stock}</td><td><span class="status-badge ${statusColor(d.status||'Aktif')}">${d.status||'Aktif'}</span></td><td class="flex gap-1"><button class="btn btn-secondary text-xs py-1 px-2" onclick="showProductForm('${p.__backendId}')"><i data-lucide="edit" style="width:14px;height:14px"></i></button><button class="btn btn-danger text-xs py-1 px-2" onclick="confirmDelete('${p.__backendId}','product')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada produk. Tambahkan produk pertama Anda!</div>'}
-      </div>
-    </div>`;
-}
-
-function showProductForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  const products = getByType('product');
-  showModal(isEdit ? 'Edit Produk' : 'Tambah Produk', `
-    <form onsubmit="saveProduct(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">SKU *</label><input name="sku" class="input-field" value="${data.sku||genNumber('SKU',products)}" required></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Nama Produk *</label><input name="name" class="input-field" value="${data.name||''}" required></div>
-      </div>
-      <div class="grid grid-cols-3 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Kategori</label><input name="category" class="input-field" value="${data.category||''}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tipe Produk</label><select name="product_type" class="input-field"><option ${data.product_type==='Stok'?'selected':''}>Stok</option><option ${data.product_type==='Non-Stok'?'selected':''}>Non-Stok</option><option ${data.product_type==='Jasa'?'selected':''}>Jasa</option></select></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Satuan</label><input name="unit" class="input-field" value="${data.unit||'Pcs'}" placeholder="Pcs, Kg, dll"></div>
-      </div>
-      <div class="grid grid-cols-3 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Harga Jual</label><input name="sell_price" type="number" class="input-field" value="${data.sell_price||0}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Harga Beli</label><input name="buy_price" type="number" class="input-field" value="${data.buy_price||0}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Min. Stok</label><input name="min_stock" type="number" class="input-field" value="${data.min_stock||0}"></div>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Status</label><select name="status" class="input-field"><option ${(data.status||'Aktif')==='Aktif'?'selected':''}>Aktif</option><option ${data.status==='Nonaktif'?'selected':''}>Nonaktif</option></select></div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Tambah'}</button></div>
-    </form>`);
-}
-
-async function saveProduct(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const data = {sku:f.get('sku'),name:f.get('name'),category:f.get('category'),product_type:f.get('product_type'),unit:f.get('unit'),sell_price:Number(f.get('sell_price')),buy_price:Number(f.get('buy_price')),min_stock:Number(f.get('min_stock')),status:f.get('status')};
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('Produk diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('product', data)) { toast('Produk ditambahkan'); closeModal(); }
-  }
-}
-
-// ============================================================
-// CUSTOMERS
-// ============================================================
-function renderCustomers(el) {
-  const customers = getByType('customer');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Customer</h2>
-        <button class="btn btn-primary" onclick="showCustomerForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Tambah Customer</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${customers.length ? `<table class="tbl"><thead><tr><th>Kode</th><th>Nama</th><th>No. HP</th><th>Email</th><th>Termin</th><th></th></tr></thead><tbody>
-        ${customers.map(c => { const d=parseData(c); return `<tr><td class="font-mono text-xs font-600">${d.code||'-'}</td><td class="font-600">${d.name||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.payment_term||'-'} hari</td><td class="flex gap-1"><button class="btn btn-secondary text-xs py-1 px-2" onclick="showCustomerForm('${c.__backendId}')"><i data-lucide="edit" style="width:14px;height:14px"></i></button><button class="btn btn-danger text-xs py-1 px-2" onclick="confirmDelete('${c.__backendId}','customer')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada customer.</div>'}
-      </div>
-    </div>`;
-}
-
-function showCustomerForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  const customers = getByType('customer');
-  showModal(isEdit ? 'Edit Customer' : 'Tambah Customer', `
-    <form onsubmit="saveCustomer(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Kode *</label><input name="code" class="input-field" value="${data.code||genNumber('CUST',customers)}" required></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Nama *</label><input name="name" class="input-field" value="${data.name||''}" required></div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">No. HP</label><input name="phone" class="input-field" value="${data.phone||''}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Email</label><input name="email" type="email" class="input-field" value="${data.email||''}"></div>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Alamat Penagihan</label><textarea name="billing_address" class="input-field" rows="2">${data.billing_address||''}</textarea></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Alamat Pengiriman</label><textarea name="shipping_address" class="input-field" rows="2">${data.shipping_address||''}</textarea></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Termin Pembayaran (hari)</label><input name="payment_term" type="number" class="input-field" value="${data.payment_term||30}"></div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Tambah'}</button></div>
-    </form>`);
-}
-
-async function saveCustomer(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const data = {code:f.get('code'),name:f.get('name'),phone:f.get('phone'),email:f.get('email'),billing_address:f.get('billing_address'),shipping_address:f.get('shipping_address'),payment_term:Number(f.get('payment_term'))};
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('Customer diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('customer', data)) { toast('Customer ditambahkan'); closeModal(); }
-  }
-}
-
-// ============================================================
-// VENDORS
-// ============================================================
-function renderVendors(el) {
-  const vendors = getByType('vendor');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Vendor / Supplier</h2>
-        <button class="btn btn-primary" onclick="showVendorForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Tambah Vendor</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${vendors.length ? `<table class="tbl"><thead><tr><th>Kode</th><th>Nama</th><th>No. HP</th><th>Email</th><th>Termin</th><th></th></tr></thead><tbody>
-        ${vendors.map(v => { const d=parseData(v); return `<tr><td class="font-mono text-xs font-600">${d.code||'-'}</td><td class="font-600">${d.name||'-'}</td><td>${d.phone||'-'}</td><td>${d.email||'-'}</td><td>${d.payment_term||'-'} hari</td><td class="flex gap-1"><button class="btn btn-secondary text-xs py-1 px-2" onclick="showVendorForm('${v.__backendId}')"><i data-lucide="edit" style="width:14px;height:14px"></i></button><button class="btn btn-danger text-xs py-1 px-2" onclick="confirmDelete('${v.__backendId}','vendor')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada vendor.</div>'}
-      </div>
-    </div>`;
-}
-
-function showVendorForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  const vendors = getByType('vendor');
-  showModal(isEdit ? 'Edit Vendor' : 'Tambah Vendor', `
-    <form onsubmit="saveVendor(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Kode *</label><input name="code" class="input-field" value="${data.code||genNumber('VND',vendors)}" required></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Nama *</label><input name="name" class="input-field" value="${data.name||''}" required></div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">No. HP</label><input name="phone" class="input-field" value="${data.phone||''}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Email</label><input name="email" type="email" class="input-field" value="${data.email||''}"></div>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Alamat</label><textarea name="address" class="input-field" rows="2">${data.address||''}</textarea></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Termin Pembayaran (hari)</label><input name="payment_term" type="number" class="input-field" value="${data.payment_term||30}"></div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Tambah'}</button></div>
-    </form>`);
-}
-
-async function saveVendor(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const data = {code:f.get('code'),name:f.get('name'),phone:f.get('phone'),email:f.get('email'),address:f.get('address'),payment_term:Number(f.get('payment_term'))};
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('Vendor diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('vendor', data)) { toast('Vendor ditambahkan'); closeModal(); }
-  }
-}
-
-// ============================================================
-// CHART OF ACCOUNTS
-// ============================================================
-const DEFAULT_COA = [
-  {code:'1100',name:'Kas/Bank',type:'Aset',normal:'Debit'},
-  {code:'1200',name:'Piutang Usaha',type:'Aset',normal:'Debit'},
-  {code:'1300',name:'Persediaan',type:'Aset',normal:'Debit'},
-  {code:'2100',name:'Hutang Usaha',type:'Liabilitas',normal:'Kredit'},
-  {code:'3100',name:'Modal',type:'Ekuitas',normal:'Kredit'},
-  {code:'3200',name:'Prive',type:'Ekuitas',normal:'Debit'},
-  {code:'4100',name:'Penjualan',type:'Pendapatan',normal:'Kredit'},
-  {code:'5100',name:'HPP',type:'Beban',normal:'Debit'},
-  {code:'5200',name:'Pembelian',type:'Beban',normal:'Debit'},
-  {code:'6100',name:'Biaya Operasional',type:'Beban',normal:'Debit'},
+// ============ FIELD DEFS ============
+const productFields = [
+  { key: 'internal_code', label: 'SKU Code', type: 'text', required: true },
+  { key: 'name', label: 'Name', type: 'text', required: true },
+  { key: 'variant', label: 'Variant', type: 'text' },
+  { key: 'category', label: 'Category', type: 'text' },
+  { key: 'unit', label: 'Unit', type: 'text' },
+  { key: 'purchase_price', label: 'Purchase Price', type: 'number' },
+  { key: 'selling_price', label: 'Selling Price', type: 'number' },
+  { key: 'weight', label: 'Weight (g)', type: 'number' },
+];
+const channelFields = [
+  { key: 'name', label: 'Channel Name', type: 'text', required: true },
+  { key: 'platform', label: 'Platform', type: 'select', options: ['tiktok','shopee','tokopedia','lazada','website','other'] },
+];
+const supplierFields = [
+  { key: 'name', label: 'Supplier Name', type: 'text', required: true },
+  { key: 'phone', label: 'Phone', type: 'text' },
+  { key: 'address', label: 'Address', type: 'text' },
+  { key: 'lead_time_days', label: 'Lead Time (days)', type: 'number' },
+  { key: 'payment_terms', label: 'Payment Terms', type: 'text' },
+];
+const customerFields = [
+  { key: 'name', label: 'Name', type: 'text', required: true },
+  { key: 'phone', label: 'Phone', type: 'text' },
+  { key: 'city', label: 'City', type: 'text' },
+  { key: 'province', label: 'Province', type: 'text' },
 ];
 
-function getCOA() {
-  const saved = getByType('coa');
-  if (saved.length) return saved.map(s => ({...parseData(s), __backendId: s.__backendId}));
-  return DEFAULT_COA;
-}
-
-function renderCOA(el) {
-  const coa = getCOA();
-  const hasSaved = getByType('coa').length > 0;
-  el.innerHTML = `
+// ============ GENERIC CRUD ============
+function renderCRUD(entityType, title, fields) {
+  const main = document.getElementById('mainContent');
+  const items = getByType(entityType);
+  main.innerHTML = `
     <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Chart of Accounts</h2>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">${title} <span class="text-slate-500 text-sm font-normal">(${items.length})</span></h3>
         <div class="flex gap-2">
-          ${!hasSaved ? `<button class="btn btn-success" onclick="initCOA()"><i data-lucide="database" style="width:16px;height:16px"></i>Inisialisasi COA Default</button>` : ''}
-          <button class="btn btn-primary" onclick="showCOAForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Tambah Akun</button>
+          <button id="exportBtn" class="bg-slate-700 hover:bg-slate-600 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <i data-lucide="download" style="width:14px;height:14px"></i> Export
+          </button>
+          <button id="importBtn" class="bg-slate-700 hover:bg-slate-600 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <i data-lucide="upload" style="width:14px;height:14px"></i> Import
+          </button>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none;">
+          <button id="addBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <i data-lucide="plus" style="width:14px;height:14px"></i> Add
+          </button>
         </div>
       </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        <table class="tbl"><thead><tr><th>Kode</th><th>Nama Akun</th><th>Tipe</th><th>Normal</th><th>Saldo</th><th></th></tr></thead><tbody>
-        ${coa.map(a => {
-          const balance = calcAccountBalance(a.code);
-          return `<tr><td class="font-mono text-xs font-600">${a.code}</td><td class="font-600">${a.name}</td><td>${a.type}</td><td>${a.normal}</td><td class="font-mono font-600">${fmtCurrency(balance)}</td><td>${a.__backendId?`<button class="btn btn-secondary text-xs py-1 px-2" onclick="showCOAForm('${a.__backendId}')"><i data-lucide="edit" style="width:14px;height:14px"></i></button>`:''}</td></tr>`; }).join('')}
-        </tbody></table>
-      </div>
-    </div>`;
-}
+      ${items.length === 0 ? `<div class="text-center py-16 text-slate-500"><i data-lucide="inbox" style="width:40px;height:40px;margin:0 auto 8px"></i><p>No ${title.toLowerCase()} yet. Click Add to create one or Import to bulk load.</p></div>` : `
+      <div class="overflow-x-auto rounded-lg border border-slate-800">
+        <table class="w-full text-sm">
+          <thead><tr class="bg-slate-800/70">${fields.slice(0, 6).map(f => `<th class="text-left px-3 py-2 text-slate-400 font-medium text-xs">${f.label}</th>`).join('')}<th class="px-3 py-2 text-xs text-slate-400">Actions</th></tr></thead>
+          <tbody id="crudBody">${items.map(item => `
+            <tr class="border-t border-slate-800/50 hover:bg-slate-800/30" data-id="${item.__backendId}">
+              ${fields.slice(0, 6).map(f => `<td class="px-3 py-2 truncate max-w-[160px]">${item[f.key] ?? '-'}</td>`).join('')}
+              <td class="px-3 py-2 flex gap-1">
+                <button class="edit-btn p-1 text-slate-400 hover:text-emerald-400 transition" data-id="${item.__backendId}"><i data-lucide="edit" style="width:14px;height:14px"></i></button>
+                <button class="del-btn p-1 text-slate-400 hover:text-red-400 transition" data-id="${item.__backendId}"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+              </td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      </div>`}
+    </div>
+  `;
 
-async function initCOA() {
-  for (const a of DEFAULT_COA) {
-    await createRecord('coa', a);
-  }
-  toast('COA default berhasil diinisialisasi');
-}
-
-function showCOAForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  showModal(isEdit ? 'Edit Akun' : 'Tambah Akun', `
-    <form onsubmit="saveCOA(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Kode Akun *</label><input name="code" class="input-field" value="${data.code||''}" required></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Nama Akun *</label><input name="name" class="input-field" value="${data.name||''}" required></div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tipe</label><select name="type" class="input-field"><option ${data.type==='Aset'?'selected':''}>Aset</option><option ${data.type==='Liabilitas'?'selected':''}>Liabilitas</option><option ${data.type==='Ekuitas'?'selected':''}>Ekuitas</option><option ${data.type==='Pendapatan'?'selected':''}>Pendapatan</option><option ${data.type==='Beban'?'selected':''}>Beban</option></select></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Saldo Normal</label><select name="normal" class="input-field"><option ${data.normal==='Debit'?'selected':''}>Debit</option><option ${data.normal==='Kredit'?'selected':''}>Kredit</option></select></div>
-      </div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Tambah'}</button></div>
-    </form>`);
-}
-
-async function saveCOA(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const data = {code:f.get('code'),name:f.get('name'),type:f.get('type'),normal:f.get('normal')};
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('Akun diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('coa', data)) { toast('Akun ditambahkan'); closeModal(); }
-  }
-}
-
-// ============================================================
-// INVENTORY HELPERS
-// ============================================================
-function calcStock(sku) {
-  const moves = getByType('stock_move').filter(m => parseData(m).sku === sku);
-  let qty = 0;
-  moves.forEach(m => {
-    const d = parseData(m);
-    qty += (d.qty_in || 0) - (d.qty_out || 0);
+  // Export Excel
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const ws_data = [fields.map(f => f.label), ...items.map(item => fields.map(f => item[f.key] ?? ''))];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    
+    // Style header row
+    const wscols = fields.map(() => ({ wch: 18 }));
+    ws['!cols'] = wscols;
+    
+    // Format header row (bold, background)
+    for (let i = 0; i < fields.length; i++) {
+      const cell = XLSX.utils.encode_cell({ r: 0, c: i });
+      if (!ws[cell]) continue;
+      ws[cell].s = {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+      };
+    }
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, title.replace(/\s+/g, '_'));
+    XLSX.writeFile(wb, `${entityType}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast(`✅ Exported ${items.length} records to ${entityType}.xlsx`);
   });
-  return qty;
-}
 
-async function createStockMove(type, sku, product_name, qty_in, qty_out, reference, unit_cost) {
-  await createRecord('stock_move', {
-    type, sku, product_name, qty_in: qty_in||0, qty_out: qty_out||0, reference, unit_cost: unit_cost||0,
-    total_value: (qty_in||0)*( unit_cost||0) - (qty_out||0)*(unit_cost||0),
-    date: new Date().toISOString()
+  // Import Excel
+  document.getElementById('importBtn').addEventListener('click', () => {
+    // Show template info first
+    showImportTemplate(fields, entityType);
   });
-}
 
-function calcAccountBalance(accountCode) {
-  const journals = getByType('journal');
-  let balance = 0;
-  journals.forEach(j => {
-    const d = parseData(j);
-    (d.entries || []).forEach(entry => {
-      if (entry.account_code === accountCode) {
-        balance += (entry.debit || 0) - (entry.credit || 0);
+  document.getElementById('fileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      
+      if (rows.length < 2) { toast('File kosong atau format salah', 'error'); return; }
+      
+      const headers = rows[0];
+      const fieldKeys = fields.map(f => f.label);
+      
+      let imported = 0, skipped = 0;
+      
+      for (let i = 1; i < rows.length; i++) {
+        if (allRecords.length >= LIMIT) { 
+          toast(`Limit tercapai. ${imported} imported, ${skipped + (rows.length - i)} skipped.`, 'error'); 
+          break; 
+        }
+        
+        const row = rows[i];
+        if (!row || row.every(v => !v)) continue; // Skip empty rows
+        
+        const obj = { id: genId() };
+        let hasData = false;
+        
+        fields.forEach((f, idx) => {
+          const cellValue = row[idx];
+          if (cellValue !== undefined && cellValue !== '') {
+            if (f.type === 'number') {
+              obj[f.key] = parseFloat(cellValue) || cellValue;
+            } else {
+              obj[f.key] = cellValue.toString().trim();
+            }
+            hasData = true;
+          } else {
+            obj[f.key] = '';
+          }
+        });
+        
+        if (hasData) {
+          const result = await window.dataSdk.create({
+            entity_type: entityType,
+            data_json: JSON.stringify(obj),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            sort_key: entityType + '_' + Date.now()
+          });
+          if (result.isOk) { imported++; } else { skipped++; }
+        } else {
+          skipped++;
+        }
       }
+      
+      toast(`✅ Imported ${imported} records${skipped > 0 ? `, skipped ${skipped}` : ''}`);
+      document.getElementById('fileInput').value = '';
+    } catch (err) {
+      console.error('Import error:', err);
+      toast('Import gagal. Periksa format file.', 'error');
+    }
+  });
+
+  document.getElementById('addBtn').addEventListener('click', () => showFormModal(entityType, fields, null));
+  main.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = items.find(i => i.__backendId === btn.dataset.id);
+      if (item) showFormModal(entityType, fields, item);
     });
   });
-  return Math.abs(balance);
-}
-
-async function createJournal(description, entries, reference) {
-  await createRecord('journal', {
-    date: new Date().toISOString(), description, reference, entries
+  main.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = items.find(i => i.__backendId === btn.dataset.id);
+      if (item) showDeleteConfirm(item);
+    });
   });
+  lucide.createIcons();
 }
 
-// ============================================================
-// SALES ORDER
-// ============================================================
-function renderSales(el) {
-  const orders = getByType('sales_order');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Sales Order</h2>
-        <button class="btn btn-primary" onclick="showSOForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Buat Sales Order</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${orders.length ? `<table class="tbl"><thead><tr><th>No. SO</th><th>Tanggal</th><th>Customer</th><th>Sales</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
-        ${orders.map(so => { const d=parseData(so); return `<tr><td class="font-mono text-xs font-600">${d.number||'-'}</td><td>${fmtDate(d.date)}</td><td class="font-600">${d.customer_name||'-'}</td><td>${d.salesperson||'-'}</td><td class="font-mono font-600">${fmtCurrency(d.total)}</td><td><span class="status-badge ${statusColor(so.status)}">${so.status}</span></td><td><button class="btn btn-secondary text-xs py-1 px-2" onclick="showSODetail('${so.__backendId}')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada sales order.</div>'}
-      </div>
-    </div>`;
-}
+function showFormModal(entityType, fields, editItem) {
+  const existing = document.querySelector('.modal-overlay');
+  if (existing) existing.remove();
 
-function showSOForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  const orders = getByType('sales_order');
-  const customers = getByType('customer');
-  const products = getByType('product').filter(p => parseData(p).status !== 'Nonaktif');
-  const lines = data.lines || [{}];
-
-  showModal(isEdit ? 'Edit Sales Order' : 'Buat Sales Order', `
-    <form onsubmit="saveSO(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-3 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">No. SO</label><input name="number" class="input-field" value="${data.number||genNumber('SO',orders)}" readonly></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tanggal</label><input name="date" type="date" class="input-field" value="${data.date?data.date.split('T')[0]:new Date().toISOString().split('T')[0]}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Sales Person</label><input name="salesperson" class="input-field" value="${data.salesperson||''}"></div>
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box fade-in">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">${editItem ? 'Edit' : 'Add'} Record</h3>
+        <button class="close-modal text-slate-400 hover:text-white"><i data-lucide="x" style="width:20px;height:20px"></i></button>
       </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Customer *</label><select name="customer" class="input-field" required>
-        <option value="">Pilih Customer</option>
-        ${customers.map(c => { const cd=parseData(c); return `<option value="${cd.code}|${cd.name}" ${data.customer_code===cd.code?'selected':''}>${cd.code} - ${cd.name}</option>`; }).join('')}
-      </select></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Item Lines</label>
-        <div id="so-lines">
-          <div class="line-item-row line-item-header"><span>Produk</span><span>Qty</span><span>Harga</span><span>Diskon %</span><span>Subtotal</span><span></span></div>
-          ${lines.map((l,i) => soLineHtml(i, l, products)).join('')}
+      <form id="crudForm" class="space-y-3">
+        ${fields.map(f => `
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">${f.label}${f.required ? ' *' : ''}</label>
+            ${f.type === 'select' ? `
+              <select name="${f.key}" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none">
+                <option value="">Select...</option>
+                ${f.options.map(o => `<option value="${o}" ${editItem && editItem[f.key] === o ? 'selected' : ''}>${o}</option>`).join('')}
+              </select>
+            ` : `
+              <input type="${f.type === 'number' ? 'number' : 'text'}" name="${f.key}" value="${editItem ? (editItem[f.key] ?? '') : ''}" ${f.required ? 'required' : ''} class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" step="${f.type === 'number' ? 'any' : ''}">
+            `}
+          </div>
+        `).join('')}
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+          <button type="submit" id="saveBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition">Save</button>
         </div>
-        <button type="button" class="btn btn-secondary text-xs mt-2" onclick="addSOLine()"><i data-lucide="plus" style="width:14px;height:14px"></i>Tambah Baris</button>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Catatan</label><textarea name="notes" class="input-field" rows="2">${data.notes||''}</textarea></div>
-        <div class="text-right pt-4"><p class="text-sm text-navy-500">Total: <span id="so-total" class="text-xl font-800 text-navy-900">${fmtCurrency(data.total||0)}</span></p></div>
-      </div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Buat SO'}</button></div>
-    </form>`, 750);
-  lucide.createIcons();
-}
-
-function soLineHtml(idx, line, products) {
-  if (!products) products = getByType('product').filter(p => parseData(p).status !== 'Nonaktif');
-  return `<div class="line-item-row" data-line="${idx}">
-    <select name="line_product_${idx}" class="input-field text-xs" onchange="soLineChange(${idx})">
-      <option value="">Pilih</option>
-      ${products.map(p => { const pd=parseData(p); return `<option value="${pd.sku}|${pd.name}|${pd.sell_price}" ${line.sku===pd.sku?'selected':''}>${pd.sku} - ${pd.name}</option>`; }).join('')}
-    </select>
-    <input name="line_qty_${idx}" type="number" class="input-field text-xs" value="${line.qty||1}" min="1" onchange="calcSOTotal()">
-    <input name="line_price_${idx}" type="number" class="input-field text-xs" value="${line.price||0}" onchange="calcSOTotal()">
-    <input name="line_disc_${idx}" type="number" class="input-field text-xs" value="${line.discount||0}" min="0" max="100" onchange="calcSOTotal()">
-    <span class="font-mono text-xs font-600" id="line_sub_${idx}">${fmtCurrency((line.qty||1)*(line.price||0)*(1-(line.discount||0)/100))}</span>
-    <button type="button" class="text-red-400 hover:text-red-600" onclick="removeSOLine(${idx})"><i data-lucide="x" style="width:16px;height:16px"></i></button>
-  </div>`;
-}
-
-let soLineCount = 1;
-function addSOLine() {
-  const container = document.getElementById('so-lines');
-  const idx = container.querySelectorAll('.line-item-row:not(.line-item-header)').length;
-  container.insertAdjacentHTML('beforeend', soLineHtml(idx, {}, null));
-  lucide.createIcons();
-}
-
-function removeSOLine(idx) {
-  const row = document.querySelector(`[data-line="${idx}"]`);
-  if (row) row.remove();
-  calcSOTotal();
-}
-
-function soLineChange(idx) {
-  const sel = document.querySelector(`[name="line_product_${idx}"]`);
-  if (!sel || !sel.value) return;
-  const [sku, name, price] = sel.value.split('|');
-  document.querySelector(`[name="line_price_${idx}"]`).value = price || 0;
-  calcSOTotal();
-}
-
-function calcSOTotal() {
-  let total = 0;
-  document.querySelectorAll('#so-lines .line-item-row:not(.line-item-header)').forEach((row, i) => {
-    const idx = row.dataset.line;
-    const qty = Number(document.querySelector(`[name="line_qty_${idx}"]`)?.value || 0);
-    const price = Number(document.querySelector(`[name="line_price_${idx}"]`)?.value || 0);
-    const disc = Number(document.querySelector(`[name="line_disc_${idx}"]`)?.value || 0);
-    const sub = qty * price * (1 - disc / 100);
-    const subEl = document.getElementById(`line_sub_${idx}`);
-    if (subEl) subEl.textContent = fmtCurrency(sub);
-    total += sub;
-  });
-  const totalEl = document.getElementById('so-total');
-  if (totalEl) totalEl.textContent = fmtCurrency(total);
-}
-
-function getSOLines() {
-  const lines = [];
-  document.querySelectorAll('#so-lines .line-item-row:not(.line-item-header)').forEach(row => {
-    const idx = row.dataset.line;
-    const prodSel = document.querySelector(`[name="line_product_${idx}"]`);
-    if (!prodSel || !prodSel.value) return;
-    const [sku, name] = prodSel.value.split('|');
-    const qty = Number(document.querySelector(`[name="line_qty_${idx}"]`)?.value || 0);
-    const price = Number(document.querySelector(`[name="line_price_${idx}"]`)?.value || 0);
-    const disc = Number(document.querySelector(`[name="line_disc_${idx}"]`)?.value || 0);
-    lines.push({sku, name, qty, price, discount: disc, subtotal: qty * price * (1 - disc / 100)});
-  });
-  return lines;
-}
-
-async function saveSO(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const custVal = f.get('customer') || '';
-  const [customer_code, customer_name] = custVal.split('|');
-  const lines = getSOLines();
-  const total = lines.reduce((s, l) => s + l.subtotal, 0);
-  const data = {number:f.get('number'),date:f.get('date'),customer_code,customer_name,salesperson:f.get('salesperson'),lines,total,notes:f.get('notes')};
-
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('SO diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('sales_order', data, '', '', 'Draft')) { toast('Sales Order dibuat'); closeModal(); }
-  }
-}
-
-function showSODetail(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const status = rec.status;
-  const lines = d.lines || [];
-
-  let actions = '';
-  if (status === 'Draft') actions += `<button class="btn btn-primary" onclick="confirmSO('${backendId}')">Confirm Order</button> <button class="btn btn-secondary" onclick="showSOForm('${backendId}')">Edit</button> <button class="btn btn-danger" onclick="cancelOrder('${backendId}','sales_order')">Cancel</button>`;
-  if (status === 'Confirmed') actions += `<button class="btn btn-success" onclick="deliverSO('${backendId}')">Kirim Barang</button> <button class="btn btn-primary" onclick="createInvoiceFromSO('${backendId}')">Buat Invoice</button>`;
-  if (status === 'Delivered' || status === 'Partially Delivered') actions += `<button class="btn btn-primary" onclick="createInvoiceFromSO('${backendId}')">Buat Invoice</button>`;
-
-  showModal(`Sales Order: ${d.number}`, `
-    <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-      <div><span class="text-navy-500">Customer:</span> <span class="font-600">${d.customer_name||'-'}</span></div>
-      <div><span class="text-navy-500">Tanggal:</span> <span class="font-600">${fmtDate(d.date)}</span></div>
-      <div><span class="text-navy-500">Status:</span> <span class="status-badge ${statusColor(status)}">${status}</span></div>
-      <div><span class="text-navy-500">Sales:</span> <span class="font-600">${d.salesperson||'-'}</span></div>
+      </form>
     </div>
-    <table class="tbl mb-4"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Diskon</th><th>Subtotal</th></tr></thead><tbody>
-    ${lines.map(l => `<tr><td>${l.name}</td><td class="font-mono">${fmt(l.qty)}</td><td class="font-mono">${fmtCurrency(l.price)}</td><td class="font-mono">${l.discount||0}%</td><td class="font-mono font-600">${fmtCurrency(l.subtotal)}</td></tr>`).join('')}
-    </tbody></table>
-    <div class="text-right mb-4"><span class="text-lg font-800 text-navy-900">Total: ${fmtCurrency(d.total)}</span></div>
-    ${d.notes?`<p class="text-sm text-navy-500 mb-4">Catatan: ${d.notes}</p>`:''}
-    <div class="flex gap-2 justify-end">${actions}</div>`, 700);
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  document.getElementById('crudForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    const fd = new FormData(e.target);
+    const obj = { id: editItem?.id || genId() };
+    fields.forEach(f => {
+      let v = fd.get(f.key);
+      if (f.type === 'number' && v) v = parseFloat(v);
+      obj[f.key] = v || '';
+    });
+    let ok;
+    if (editItem) { ok = await updateRecord(editItem.__raw, obj); }
+    else { ok = await createRecord(entityType, obj); }
+    if (ok) { toast(editItem ? 'Updated!' : 'Created!'); overlay.remove(); }
+    else { btn.disabled = false; btn.textContent = 'Save'; }
+  });
   lucide.createIcons();
 }
 
-async function confirmSO(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec) { await updateRecord(rec, parseData(rec), 'Confirmed'); toast('SO dikonfirmasi'); closeModal(); }
-}
+function showImportTemplate(fields, entityType) {
+  const existing = document.querySelector('.modal-overlay');
+  if (existing) existing.remove();
 
-async function deliverSO(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  // Create stock moves for each line
-  for (const line of (d.lines || [])) {
-    const product = getByType('product').find(p => parseData(p).sku === line.sku);
-    const pd = product ? parseData(product) : {};
-    await createStockMove('Sales Delivery', line.sku, line.name, 0, line.qty, d.number, pd.buy_price || 0);
-    // Journal: Debit HPP, Credit Persediaan
-    const costValue = line.qty * (pd.buy_price || 0);
-    if (costValue > 0) {
-      await createJournal(`HPP pengiriman ${d.number}`, [
-        {account_code:'5100',account_name:'HPP',debit:costValue,credit:0},
-        {account_code:'1300',account_name:'Persediaan',debit:0,credit:costValue}
-      ], d.number);
+  // Generate sample row
+  const sampleRow = fields.map(f => {
+    if (f.type === 'number') return '1000';
+    if (f.type === 'select') return f.options?.[0] || 'option1';
+    if (f.key.includes('date') || f.key === 'order_date') return new Date().toISOString().slice(0, 10);
+    if (f.key.includes('price') || f.key.includes('cost')) return '50000';
+    if (f.key.includes('qty')) return '5';
+    if (f.key === 'internal_code' || f.key === 'external_order_id') return 'CODE-001';
+    if (f.key === 'name') return 'Sample Item';
+    return 'Sample Value';
+  });
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box fade-in max-w-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Import Template - ${entityType.replace(/_/g, ' ').toUpperCase()}</h3>
+        <button class="close-modal text-slate-400 hover:text-white"><i data-lucide="x" style="width:20px;height:20px"></i></button>
+      </div>
+      
+      <div class="space-y-4 mb-4">
+        <!-- Instructions -->
+        <div class="bg-blue-900/30 border border-blue-800/40 rounded-lg p-3">
+          <p class="text-sm text-blue-200">📋 <strong>How to Import:</strong></p>
+          <ul class="text-xs text-blue-100/70 mt-2 space-y-1 ml-5 list-disc">
+            <li>Download template or prepare your Excel file with these exact columns</li>
+            <li>Match your data column headers to template names (case-insensitive)</li>
+            <li>Empty rows will be skipped automatically</li>
+            <li>Required fields: <strong>${fields.filter(f => f.required).map(f => f.label).join(', ')}</strong></li>
+            <li>Max 999 records total in system</li>
+          </ul>
+        </div>
+
+        <!-- Template Preview Table -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-semibold text-slate-300">Template Structure:</p>
+            <button id="downloadTemplate" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded flex items-center gap-1.5 transition">
+              <i data-lucide="download" style="width:12px;height:12px"></i> Download Template
+            </button>
+          </div>
+          <div class="overflow-x-auto rounded border border-slate-700 bg-slate-800/50">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="bg-slate-700/70 border-b border-slate-600">
+                  ${fields.map(f => `
+                    <th class="px-2 py-2 text-left text-slate-300 font-semibold whitespace-nowrap">
+                      <div class="flex items-center gap-1">
+                        ${f.label}
+                        ${f.required ? '<span class="text-red-400">*</span>' : ''}
+                      </div>
+                    </th>
+                  `).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-700/50">
+                  ${sampleRow.map((val, idx) => `
+                    <td class="px-2 py-2 text-slate-400 whitespace-nowrap">
+                      <span class="text-xs text-slate-500 italic">${val}</span>
+                    </td>
+                  `).join('')}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Field Types Info -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-800/50 rounded p-2 border border-slate-700/50">
+            <p class="text-slate-400 font-medium mb-1">🔢 Number Fields:</p>
+            <p class="text-slate-500">${fields.filter(f => f.type === 'number').map(f => f.label).join(', ') || 'None'}</p>
+          </div>
+          <div class="bg-slate-800/50 rounded p-2 border border-slate-700/50">
+            <p class="text-slate-400 font-medium mb-1">✓ Required:</p>
+            <p class="text-slate-500">${fields.filter(f => f.required).map(f => f.label).join(', ') || 'None'}</p>
+          </div>
+          ${fields.some(f => f.type === 'select') ? `
+            <div class="bg-slate-800/50 rounded p-2 border border-slate-700/50 col-span-2">
+              <p class="text-slate-400 font-medium mb-1">📝 Select Options:</p>
+              <div class="text-slate-500 space-y-1">
+                ${fields.filter(f => f.type === 'select').map(f => `<p><strong>${f.label}:</strong> ${f.options.join(', ')}</p>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-between gap-2 pt-4 border-t border-slate-700">
+        <button class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+        <button id="proceedImport" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition flex items-center gap-2">
+          <i data-lucide="upload" style="width:14px;height:14px"></i> Select File to Import
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  
+  overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  // Download Template
+  document.getElementById('downloadTemplate').addEventListener('click', () => {
+    const ws_data = [fields.map(f => f.label), sampleRow];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    
+    const wscols = fields.map(() => ({ wch: 18 }));
+    ws['!cols'] = wscols;
+    
+    // Format header
+    for (let i = 0; i < fields.length; i++) {
+      const cell = XLSX.utils.encode_cell({ r: 0, c: i });
+      if (!ws[cell]) continue;
+      ws[cell].s = {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+      };
     }
-  }
-  await updateRecord(rec, d, 'Delivered');
-  toast('Barang dikirim & stok dikurangi');
-  closeModal();
-}
-
-async function createInvoiceFromSO(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const invoices = getByType('invoice');
-  const invNumber = genNumber('INV', invoices);
-  // Show modal to select payment method (COD or regular)
-  showModal('Pilih Metode Pembayaran', `
-    <p class="text-sm text-navy-600 mb-4">Pilih metode pembayaran untuk invoice ini:</p>
-    <div class="flex gap-3">
-      <button class="btn btn-primary flex-1" onclick="doCreateInvoice('${backendId}','COD')"><i data-lucide="truck" style="width:16px;height:16px"></i>COD</button>
-      <button class="btn btn-secondary flex-1" onclick="doCreateInvoice('${backendId}','Regular')"><i data-lucide="credit-card" style="width:16px;height:16px"></i>Regular</button>
-    </div>`, 500);
-  lucide.createIcons();
-}
-
-async function doCreateInvoice(backendId, paymentMethod) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const invoices = getByType('invoice');
-  const invNumber = genNumber('INV', invoices);
-  const invData = {
-    number: invNumber, date: new Date().toISOString(), due_date: new Date(Date.now() + 30*86400000).toISOString(),
-    customer_code: d.customer_code, customer_name: d.customer_name,
-    so_reference: d.number, lines: d.lines, total: d.total, paid_amount: 0, payment_method: paymentMethod
-  };
-  if (await createRecord('invoice', invData, '', d.number, 'Draft')) {
-    await updateRecord(rec, d, 'Invoiced');
-    toast(`Invoice ${invNumber} dibuat (${paymentMethod})`);
-    closeModal();
-  }
-}
-
-async function cancelOrder(backendId, type) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec) { await updateRecord(rec, parseData(rec), 'Cancelled'); toast('Order dibatalkan'); closeModal(); }
-}
-
-// ============================================================
-// RETUR BARANG
-// ============================================================
-function renderReturns(el) {
-  const returns = getByType('return_item');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Retur Barang</h2>
-        <button class="btn btn-primary" onclick="showReturnForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Buat Retur</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${returns.length ? `<table class="tbl"><thead><tr><th>No. Retur</th><th>Tanggal</th><th>Tipe</th><th>Referensi</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
-        ${returns.map(ret => { const d=parseData(ret); return `<tr><td class="font-mono text-xs font-600">${d.number||'-'}</td><td>${fmtDate(d.date)}</td><td><span class="status-badge ${d.type==='customer'?'bg-blue-100 text-blue-700':'bg-amber-100 text-amber-700'}">${d.type==='customer'?'Dari Customer':'Ke Vendor'}</span></td><td class="font-mono text-xs">${d.reference||'-'}</td><td class="font-mono font-600">${fmtCurrency(d.total)}</td><td><span class="status-badge ${statusColor(ret.status)}">${ret.status}</span></td><td><button class="btn btn-secondary text-xs py-1 px-2" onclick="showReturnDetail('${ret.__backendId}')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada retur barang.</div>'}
-      </div>
-    </div>`;
-}
-
-function showReturnForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  const returns = getByType('return_item');
-  const invoices = getByType('invoice');
-  const bills = getByType('vendor_bill');
-  const products = getByType('product').filter(p => parseData(p).status !== 'Nonaktif');
-
-  showModal(isEdit ? 'Edit Retur Barang' : 'Buat Retur Barang', `
-    <form onsubmit="saveReturn(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-3 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">No. Retur</label><input name="number" class="input-field" value="${data.number||genNumber('RET',returns)}" readonly></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tanggal</label><input name="date" type="date" class="input-field" value="${data.date?data.date.split('T')[0]:new Date().toISOString().split('T')[0]}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tipe</label><select name="type" class="input-field" onchange="updateReturnRef(this.value)" required><option value="">Pilih</option><option ${data.type==='customer'?'selected':''}>Retur dari Customer</option><option ${data.type==='vendor'?'selected':''}>Retur ke Vendor</option></select></div>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Referensi (Invoice/Bill) *</label><select name="reference" class="input-field" id="return-ref" required>
-        <option value="">Pilih Dokumen</option>
-        ${data.type === 'customer' ? invoices.map(inv => { const d=parseData(inv); return `<option value="${d.number}|${d.customer_name}|${d.total}" ${data.reference===d.number?'selected':''}>${d.number} - ${d.customer_name} (${fmtCurrency(d.total)})</option>`; }).join('') : data.type === 'vendor' ? bills.map(b => { const d=parseData(b); return `<option value="${d.number}|${d.vendor_name}|${d.total}" ${data.reference===d.number?'selected':''}>${d.number} - ${d.vendor_name} (${fmtCurrency(d.total)})</option>`; }).join('') : ''}
-      </select></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Item Retur</label>
-        <div id="return-lines">
-          <div class="line-item-row line-item-header"><span>Produk</span><span>Qty</span><span>Harga</span><span>Alasan</span><span>Total</span><span></span></div>
-          ${(data.lines||[{}]).map((l,i) => returnLineHtml(i, l, products)).join('')}
-        </div>
-        <button type="button" class="btn btn-secondary text-xs mt-2" onclick="addReturnLine()"><i data-lucide="plus" style="width:14px;height:14px"></i>Tambah Baris</button>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Catatan</label><textarea name="notes" class="input-field" rows="2">${data.notes||''}</textarea></div>
-        <div class="text-right pt-4"><p class="text-sm text-navy-500">Total Retur: <span id="return-total" class="text-xl font-800 text-navy-900">${fmtCurrency(data.total||0)}</span></p></div>
-      </div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Buat Retur'}</button></div>
-    </form>`, 750);
-  lucide.createIcons();
-}
-
-function returnLineHtml(idx, line, products) {
-  if (!products) products = getByType('product').filter(p => parseData(p).status !== 'Nonaktif');
-  return `<div class="line-item-row" data-retline="${idx}">
-    <select name="retline_product_${idx}" class="input-field text-xs" onchange="retLineChange(${idx})">
-      <option value="">Pilih</option>
-      ${products.map(p => { const pd=parseData(p); return `<option value="${pd.sku}|${pd.name}|${pd.sell_price}" ${line.sku===pd.sku?'selected':''}>${pd.sku} - ${pd.name}</option>`; }).join('')}
-    </select>
-    <input name="retline_qty_${idx}" type="number" class="input-field text-xs" value="${line.qty||1}" min="1" onchange="calcReturnTotal()">
-    <input name="retline_price_${idx}" type="number" class="input-field text-xs" value="${line.price||0}" onchange="calcReturnTotal()">
-    <select name="retline_reason_${idx}" class="input-field text-xs">
-      <option ${(line.reason||'Cacat')===''?'selected':''}>Cacat</option>
-      <option ${line.reason==='Salah Pengiriman'?'selected':''}>Salah Pengiriman</option>
-      <option ${line.reason==='Tidak Sesuai'?'selected':''}>Tidak Sesuai</option>
-      <option ${line.reason==='Lainnya'?'selected':''}>Lainnya</option>
-    </select>
-    <span class="font-mono text-xs font-600" id="retline_sub_${idx}">${fmtCurrency((line.qty||1)*(line.price||0))}</span>
-    <button type="button" class="text-red-400 hover:text-red-600" onclick="removeReturnLine(${idx})"><i data-lucide="x" style="width:16px;height:16px"></i></button>
-  </div>`;
-}
-
-function addReturnLine() {
-  const container = document.getElementById('return-lines');
-  const idx = container.querySelectorAll('.line-item-row:not(.line-item-header)').length;
-  container.insertAdjacentHTML('beforeend', returnLineHtml(idx, {}, null));
-  lucide.createIcons();
-}
-
-function removeReturnLine(idx) {
-  const row = document.querySelector(`[data-retline="${idx}"]`);
-  if (row) row.remove();
-  calcReturnTotal();
-}
-
-function retLineChange(idx) {
-  const sel = document.querySelector(`[name="retline_product_${idx}"]`);
-  if (!sel || !sel.value) return;
-  const [sku, name, price] = sel.value.split('|');
-  document.querySelector(`[name="retline_price_${idx}"]`).value = price || 0;
-  calcReturnTotal();
-}
-
-function calcReturnTotal() {
-  let total = 0;
-  document.querySelectorAll('#return-lines .line-item-row:not(.line-item-header)').forEach(row => {
-    const idx = row.dataset.retline;
-    const qty = Number(document.querySelector(`[name="retline_qty_${idx}"]`)?.value || 0);
-    const price = Number(document.querySelector(`[name="retline_price_${idx}"]`)?.value || 0);
-    const sub = qty * price;
-    const subEl = document.getElementById(`retline_sub_${idx}`);
-    if (subEl) subEl.textContent = fmtCurrency(sub);
-    total += sub;
-  });
-  const totalEl = document.getElementById('return-total');
-  if (totalEl) totalEl.textContent = fmtCurrency(total);
-}
-
-function updateReturnRef(type) {
-  const refSel = document.getElementById('return-ref');
-  if (!refSel) return;
-  const invoices = getByType('invoice');
-  const bills = getByType('vendor_bill');
-  refSel.innerHTML = '<option value="">Pilih Dokumen</option>';
-  if (type === 'Retur dari Customer') {
-    invoices.forEach(inv => { const d=parseData(inv); const opt=document.createElement('option'); opt.value=`${d.number}|${d.customer_name}|${d.total}`; opt.textContent=`${d.number} - ${d.customer_name} (${fmtCurrency(d.total)})`; refSel.appendChild(opt); });
-  } else if (type === 'Retur ke Vendor') {
-    bills.forEach(b => { const d=parseData(b); const opt=document.createElement('option'); opt.value=`${d.number}|${d.vendor_name}|${d.total}`; opt.textContent=`${d.number} - ${d.vendor_name} (${fmtCurrency(d.total)})`; refSel.appendChild(opt); });
-  }
-}
-
-function getReturnLines() {
-  const lines = [];
-  document.querySelectorAll('#return-lines .line-item-row:not(.line-item-header)').forEach(row => {
-    const idx = row.dataset.retline;
-    const prodSel = document.querySelector(`[name="retline_product_${idx}"]`);
-    if (!prodSel || !prodSel.value) return;
-    const [sku, name] = prodSel.value.split('|');
-    const qty = Number(document.querySelector(`[name="retline_qty_${idx}"]`)?.value || 0);
-    const price = Number(document.querySelector(`[name="retline_price_${idx}"]`)?.value || 0);
-    const reason = document.querySelector(`[name="retline_reason_${idx}"]`)?.value || 'Cacat';
-    lines.push({sku, name, qty, price, reason, subtotal: qty * price});
-  });
-  return lines;
-}
-
-async function saveReturn(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const type = f.get('type');
-  const refVal = f.get('reference') || '';
-  const [reference, party_name, original_total] = refVal.split('|');
-  const lines = getReturnLines();
-  const total = lines.reduce((s, l) => s + l.subtotal, 0);
-  const data = {number:f.get('number'),date:f.get('date'),type,reference,party_name,original_total:Number(original_total),lines,total,notes:f.get('notes')};
-
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('Retur diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('return_item', data, '', reference, 'Pending')) { toast('Retur barang dibuat'); closeModal(); }
-  }
-}
-
-function showReturnDetail(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const status = rec.status;
-  const lines = d.lines || [];
-
-  let actions = '';
-  if (status === 'Pending') actions += `<button class="btn btn-primary" onclick="approveReturn('${backendId}')">Terima Retur</button> <button class="btn btn-secondary" onclick="showReturnForm('${backendId}')">Edit</button> <button class="btn btn-danger" onclick="rejectReturn('${backendId}')">Tolak</button>`;
-  if (status === 'Approved') actions += `<button class="btn btn-success" onclick="completeReturn('${backendId}')">Proses Selesai</button>`;
-
-  showModal(`Retur: ${d.number}`, `
-    <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-      <div><span class="text-navy-500">Tipe:</span> <span class="font-600">${d.type==='customer'?'Dari Customer':'Ke Vendor'}</span></div>
-      <div><span class="text-navy-500">Referensi:</span> <span class="font-mono font-600">${d.reference}</span></div>
-      <div><span class="text-navy-500">Status:</span> <span class="status-badge ${statusColor(status)}">${status}</span></div>
-      <div><span class="text-navy-500">Pihak:</span> <span class="font-600">${d.party_name||'-'}</span></div>
-      <div><span class="text-navy-500">Tanggal:</span> <span class="font-600">${fmtDate(d.date)}</span></div>
-    </div>
-    <table class="tbl mb-4"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Alasan</th><th>Total</th></tr></thead><tbody>
-    ${lines.map(l => `<tr><td class="font-600">${l.name}</td><td class="font-mono">${fmt(l.qty)}</td><td class="font-mono">${fmtCurrency(l.price)}</td><td class="text-xs">${l.reason}</td><td class="font-mono font-600">${fmtCurrency(l.subtotal)}</td></tr>`).join('')}
-    </tbody></table>
-    <div class="text-right mb-4"><span class="text-lg font-800 text-navy-900">Total Retur: ${fmtCurrency(d.total)}</span></div>
-    ${d.notes?`<p class="text-sm text-navy-500 mb-4">Catatan: ${d.notes}</p>`:''}
-    <div class="flex gap-2 justify-end">${actions}</div>`, 700);
-  lucide.createIcons();
-}
-
-async function approveReturn(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  // Add stock back for customer returns, reduce for vendor returns
-  for (const line of (d.lines || [])) {
-    if (d.type === 'customer') {
-      await createStockMove('Return In', line.sku, line.name, line.qty, 0, d.number, line.price);
+    
+    // Format sample row (light gray)
+    for (let i = 0; i < fields.length; i++) {
+      const cell = XLSX.utils.encode_cell({ r: 1, c: i });
+      if (!ws[cell]) continue;
+      ws[cell].s = {
+        fill: { fgColor: { rgb: 'F1F5F9' } },
+        alignment: { horizontal: 'left', vertical: 'center' },
+        border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+      };
     }
-  }
-  // Create journal for return credit
-  await createJournal(`Retur ${d.number} approved`, [
-    {account_code: d.type==='customer'?'1300':'5200', account_name: d.type==='customer'?'Persediaan':'Pembelian', debit: d.total, credit: 0},
-    {account_code: d.type==='customer'?'4100':'2100', account_name: d.type==='customer'?'Penjualan':'Hutang Usaha', debit: 0, credit: d.total}
-  ], d.number);
-  await updateRecord(rec, d, 'Approved');
-  toast('Retur disetujui');
-  closeModal();
-}
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, `${entityType}_TEMPLATE.xlsx`);
+    toast('✅ Template downloaded');
+  });
 
-async function rejectReturn(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec) { await updateRecord(rec, parseData(rec), 'Rejected'); toast('Retur ditolak'); closeModal(); }
-}
+  // Proceed with file selection
+  document.getElementById('proceedImport').addEventListener('click', () => {
+    overlay.remove();
+    document.getElementById('fileInput').click();
+  });
 
-async function completeReturn(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec) { await updateRecord(rec, parseData(rec), 'Completed'); toast('Proses retur selesai'); closeModal(); }
-}
-
-// ============================================================
-// PURCHASE ORDER
-// ============================================================
-function renderPurchases(el) {
-  const orders = getByType('purchase_order');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Purchase Order</h2>
-        <button class="btn btn-primary" onclick="showPOForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Buat Purchase Order</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${orders.length ? `<table class="tbl"><thead><tr><th>No. PO</th><th>Tanggal</th><th>Vendor</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
-        ${orders.map(po => { const d=parseData(po); return `<tr><td class="font-mono text-xs font-600">${d.number||'-'}</td><td>${fmtDate(d.date)}</td><td class="font-600">${d.vendor_name||'-'}</td><td class="font-mono font-600">${fmtCurrency(d.total)}</td><td><span class="status-badge ${statusColor(po.status)}">${po.status}</span></td><td><button class="btn btn-secondary text-xs py-1 px-2" onclick="showPODetail('${po.__backendId}')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada purchase order.</div>'}
-      </div>
-    </div>`;
-}
-
-function showPOForm(backendId) {
-  const existing = backendId ? ALL_DATA.find(d => d.__backendId === backendId) : null;
-  const data = existing ? parseData(existing) : {};
-  const isEdit = !!existing;
-  const orders = getByType('purchase_order');
-  const vendors = getByType('vendor');
-  const products = getByType('product').filter(p => parseData(p).status !== 'Nonaktif');
-  const lines = data.lines || [{}];
-
-  showModal(isEdit ? 'Edit Purchase Order' : 'Buat Purchase Order', `
-    <form onsubmit="savePO(event,'${backendId||''}')" class="space-y-3">
-      <div class="grid grid-cols-3 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">No. PO</label><input name="number" class="input-field" value="${data.number||genNumber('PO',orders)}" readonly></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tanggal</label><input name="date" type="date" class="input-field" value="${data.date?data.date.split('T')[0]:new Date().toISOString().split('T')[0]}"></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Est. Datang</label><input name="eta" type="date" class="input-field" value="${data.eta||''}"></div>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Vendor *</label><select name="vendor" class="input-field" required>
-        <option value="">Pilih Vendor</option>
-        ${vendors.map(v => { const vd=parseData(v); return `<option value="${vd.code}|${vd.name}" ${data.vendor_code===vd.code?'selected':''}>${vd.code} - ${vd.name}</option>`; }).join('')}
-      </select></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Item Lines</label>
-        <div id="po-lines">
-          <div class="line-item-row line-item-header"><span>Produk</span><span>Qty</span><span>Harga Beli</span><span>Diskon %</span><span>Subtotal</span><span></span></div>
-          ${lines.map((l,i) => poLineHtml(i, l, products)).join('')}
-        </div>
-        <button type="button" class="btn btn-secondary text-xs mt-2" onclick="addPOLine()"><i data-lucide="plus" style="width:14px;height:14px"></i>Tambah Baris</button>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Catatan</label><textarea name="notes" class="input-field" rows="2">${data.notes||''}</textarea></div>
-        <div class="text-right pt-4"><p class="text-sm text-navy-500">Total: <span id="po-total" class="text-xl font-800 text-navy-900">${fmtCurrency(data.total||0)}</span></p></div>
-      </div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">${isEdit?'Simpan':'Buat PO'}</button></div>
-    </form>`, 750);
   lucide.createIcons();
 }
 
-function poLineHtml(idx, line, products) {
-  if (!products) products = getByType('product').filter(p => parseData(p).status !== 'Nonaktif');
-  return `<div class="line-item-row" data-poline="${idx}">
-    <select name="poline_product_${idx}" class="input-field text-xs" onchange="poLineChange(${idx})">
-      <option value="">Pilih</option>
-      ${products.map(p => { const pd=parseData(p); return `<option value="${pd.sku}|${pd.name}|${pd.buy_price}" ${line.sku===pd.sku?'selected':''}>${pd.sku} - ${pd.name}</option>`; }).join('')}
-    </select>
-    <input name="poline_qty_${idx}" type="number" class="input-field text-xs" value="${line.qty||1}" min="1" onchange="calcPOTotal()">
-    <input name="poline_price_${idx}" type="number" class="input-field text-xs" value="${line.price||0}" onchange="calcPOTotal()">
-    <input name="poline_disc_${idx}" type="number" class="input-field text-xs" value="${line.discount||0}" min="0" max="100" onchange="calcPOTotal()">
-    <span class="font-mono text-xs font-600" id="poline_sub_${idx}">${fmtCurrency((line.qty||1)*(line.price||0)*(1-(line.discount||0)/100))}</span>
-    <button type="button" class="text-red-400 hover:text-red-600" onclick="removePOLine(${idx})"><i data-lucide="x" style="width:16px;height:16px"></i></button>
-  </div>`;
-}
-
-function addPOLine() {
-  const container = document.getElementById('po-lines');
-  const idx = container.querySelectorAll('.line-item-row:not(.line-item-header)').length;
-  container.insertAdjacentHTML('beforeend', poLineHtml(idx, {}, null));
-  lucide.createIcons();
-}
-
-function removePOLine(idx) {
-  const row = document.querySelector(`[data-poline="${idx}"]`);
-  if (row) row.remove();
-  calcPOTotal();
-}
-
-function poLineChange(idx) {
-  const sel = document.querySelector(`[name="poline_product_${idx}"]`);
-  if (!sel || !sel.value) return;
-  const [sku, name, price] = sel.value.split('|');
-  document.querySelector(`[name="poline_price_${idx}"]`).value = price || 0;
-  calcPOTotal();
-}
-
-function calcPOTotal() {
-  let total = 0;
-  document.querySelectorAll('#po-lines .line-item-row:not(.line-item-header)').forEach(row => {
-    const idx = row.dataset.poline;
-    const qty = Number(document.querySelector(`[name="poline_qty_${idx}"]`)?.value || 0);
-    const price = Number(document.querySelector(`[name="poline_price_${idx}"]`)?.value || 0);
-    const disc = Number(document.querySelector(`[name="poline_disc_${idx}"]`)?.value || 0);
-    const sub = qty * price * (1 - disc / 100);
-    const subEl = document.getElementById(`poline_sub_${idx}`);
-    if (subEl) subEl.textContent = fmtCurrency(sub);
-    total += sub;
-  });
-  const totalEl = document.getElementById('po-total');
-  if (totalEl) totalEl.textContent = fmtCurrency(total);
-}
-
-function getPOLines() {
-  const lines = [];
-  document.querySelectorAll('#po-lines .line-item-row:not(.line-item-header)').forEach(row => {
-    const idx = row.dataset.poline;
-    const prodSel = document.querySelector(`[name="poline_product_${idx}"]`);
-    if (!prodSel || !prodSel.value) return;
-    const [sku, name] = prodSel.value.split('|');
-    const qty = Number(document.querySelector(`[name="poline_qty_${idx}"]`)?.value || 0);
-    const price = Number(document.querySelector(`[name="poline_price_${idx}"]`)?.value || 0);
-    const disc = Number(document.querySelector(`[name="poline_disc_${idx}"]`)?.value || 0);
-    lines.push({sku, name, qty, price, discount: disc, subtotal: qty * price * (1 - disc / 100)});
-  });
-  return lines;
-}
-
-async function savePO(e, backendId) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const vendVal = f.get('vendor') || '';
-  const [vendor_code, vendor_name] = vendVal.split('|');
-  const lines = getPOLines();
-  const total = lines.reduce((s, l) => s + l.subtotal, 0);
-  const data = {number:f.get('number'),date:f.get('date'),eta:f.get('eta'),vendor_code,vendor_name,lines,total,notes:f.get('notes')};
-
-  if (backendId) {
-    const rec = ALL_DATA.find(d => d.__backendId === backendId);
-    if (rec && await updateRecord(rec, data)) { toast('PO diperbarui'); closeModal(); }
-  } else {
-    if (await createRecord('purchase_order', data, '', '', 'Draft')) { toast('Purchase Order dibuat'); closeModal(); }
-  }
-}
-
-function showPODetail(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const status = rec.status;
-  const lines = d.lines || [];
-
-  let actions = '';
-  if (status === 'Draft') actions += `<button class="btn btn-primary" onclick="confirmPO('${backendId}')">Confirm PO</button> <button class="btn btn-secondary" onclick="showPOForm('${backendId}')">Edit</button> <button class="btn btn-danger" onclick="cancelOrder('${backendId}','purchase_order')">Cancel</button>`;
-  if (status === 'Confirmed' || status === 'Sent') actions += `<button class="btn btn-success" onclick="receivePO('${backendId}')">Terima Barang</button>`;
-  if (status === 'Received') actions += `<button class="btn btn-primary" onclick="createBillFromPO('${backendId}')">Buat Vendor Bill</button>`;
-
-  showModal(`Purchase Order: ${d.number}`, `
-    <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-      <div><span class="text-navy-500">Vendor:</span> <span class="font-600">${d.vendor_name||'-'}</span></div>
-      <div><span class="text-navy-500">Tanggal:</span> <span class="font-600">${fmtDate(d.date)}</span></div>
-      <div><span class="text-navy-500">Status:</span> <span class="status-badge ${statusColor(status)}">${status}</span></div>
+function showDeleteConfirm(item) {
+  const existing = document.querySelector('.modal-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box fade-in text-center">
+      <i data-lucide="alert-triangle" style="width:40px;height:40px;margin:0 auto 12px" class="text-amber-400"></i>
+      <h3 class="text-lg font-semibold mb-2">Delete this record?</h3>
+      <p class="text-sm text-slate-400 mb-4">This action cannot be undone.</p>
+      <div class="flex justify-center gap-2">
+        <button class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+        <button id="confirmDel" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm rounded-lg transition">Delete</button>
+      </div>
     </div>
-    <table class="tbl mb-4"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Diskon</th><th>Subtotal</th></tr></thead><tbody>
-    ${lines.map(l => `<tr><td>${l.name}</td><td class="font-mono">${fmt(l.qty)}</td><td class="font-mono">${fmtCurrency(l.price)}</td><td class="font-mono">${l.discount||0}%</td><td class="font-mono font-600">${fmtCurrency(l.subtotal)}</td></tr>`).join('')}
-    </tbody></table>
-    <div class="text-right mb-4"><span class="text-lg font-800 text-navy-900">Total: ${fmtCurrency(d.total)}</span></div>
-    <div class="flex gap-2 justify-end">${actions}</div>`, 700);
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('confirmDel').addEventListener('click', async () => {
+    const btn = document.getElementById('confirmDel');
+    btn.disabled = true; btn.textContent = 'Deleting...';
+    const ok = await deleteRecord(item.__raw);
+    if (ok) { toast('Deleted!'); overlay.remove(); }
+    else { btn.disabled = false; btn.textContent = 'Delete'; }
+  });
   lucide.createIcons();
 }
 
-async function confirmPO(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec) { await updateRecord(rec, parseData(rec), 'Confirmed'); toast('PO dikonfirmasi'); closeModal(); }
-}
-
-async function receivePO(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  for (const line of (d.lines || [])) {
-    await createStockMove('Purchase Receipt', line.sku, line.name, line.qty, 0, d.number, line.price);
-  }
-  await updateRecord(rec, d, 'Received');
-  toast('Barang diterima & stok bertambah');
-  closeModal();
-}
-
-async function createBillFromPO(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const bills = getByType('vendor_bill');
-  const billNumber = genNumber('BILL', bills);
-  const billData = {
-    number: billNumber, date: new Date().toISOString(), due_date: new Date(Date.now() + 30*86400000).toISOString(),
-    vendor_code: d.vendor_code, vendor_name: d.vendor_name,
-    po_reference: d.number, lines: d.lines, total: d.total, paid_amount: 0
-  };
-  if (await createRecord('vendor_bill', billData, '', d.number, 'Draft')) {
-    await updateRecord(rec, d, 'Billed');
-    toast(`Vendor Bill ${billNumber} dibuat`);
-    closeModal();
-  }
-}
-
-// ============================================================
-// INVENTORY
-// ============================================================
-function renderInventory(el) {
+// ============ DASHBOARD ============
+function renderDashboard() {
+  const main = document.getElementById('mainContent');
+  const sales = getByType('sales_order');
+  const settlements = getByType('settlement');
   const products = getByType('product');
-  const moves = getByType('stock_move');
-  const activeTab = window._invTab || 'stock';
+  const ads = getByType('ads_campaign');
+  const stock = getByType('stock_movement');
+  const returns = getByType('return');
 
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Inventory</h2>
-        <button class="btn btn-primary" onclick="showAdjustmentForm()"><i data-lucide="plus" style="width:16px;height:16px"></i>Penyesuaian Stok</button>
+  const totalOrders = sales.length;
+  const totalRevenue = settlements.reduce((s, r) => s + (parseFloat(r.total_revenue) || 0), 0);
+  const totalSettlement = settlements.reduce((s, r) => s + (parseFloat(r.total_settlement) || 0), 0);
+  const totalFees = settlements.reduce((s, r) => s + (parseFloat(r.commission_fee) || 0) + (parseFloat(r.payment_fee) || 0) + (parseFloat(r.shipping_cost) || 0) + (parseFloat(r.affiliate_fee) || 0) + (parseFloat(r.ads_fee) || 0), 0);
+  const totalAdSpend = ads.reduce((s, r) => s + (parseFloat(r.cost) || 0), 0);
+  const adsRevenue = totalRevenue; // simplified
+  const roas = totalAdSpend > 0 ? (adsRevenue / totalAdSpend).toFixed(2) : '-';
+  const grossMargin = totalRevenue > 0 ? (((totalSettlement - totalAdSpend) / totalRevenue) * 100).toFixed(1) : '-';
+  const deliveredOrders = sales.filter(o => o.order_status === 'delivered').length;
+
+  main.innerHTML = `
+    <div class="fade-in space-y-4">
+      <!-- KPI Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        ${kpiCard('shopping-cart', 'Total Orders', fmt(totalOrders), 'emerald')}
+        ${kpiCard('banknote', 'Revenue', 'Rp ' + fmtK(totalRevenue), 'cyan')}
+        ${kpiCard('wallet', 'Net Settlement', 'Rp ' + fmtK(totalSettlement), 'violet')}
+        ${kpiCard('trending-up', 'Gross Margin', grossMargin + '%', parseFloat(grossMargin) > 0 ? 'emerald' : 'red')}
+        ${kpiCard('truck', 'Delivered', fmt(deliveredOrders), 'blue')}
+        ${kpiCard('megaphone', 'Ad Spend', 'Rp ' + fmtK(totalAdSpend), 'amber')}
+        ${kpiCard('target', 'ROAS', roas + 'x', parseFloat(roas) > 2 ? 'emerald' : 'red')}
+        ${kpiCard('undo-2', 'Returns', fmt(returns.length), 'rose')}
       </div>
-      <div class="flex gap-1 mb-4 border-b border-navy-100">
-        <button class="tab-btn ${activeTab==='stock'?'active':''}" onclick="window._invTab='stock';renderCurrentPage()">Stok Saat Ini</button>
-        <button class="tab-btn ${activeTab==='moves'?'active':''}" onclick="window._invTab='moves';renderCurrentPage()">Pergerakan Stok</button>
+
+      <!-- Quick Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 kpi-card">
+          <h4 class="text-sm font-semibold text-slate-400 mb-3 flex items-center gap-2"><i data-lucide="package" style="width:14px;height:14px"></i> Products Overview</h4>
+          <div class="text-2xl font-bold text-emerald-400">${products.length}</div>
+          <p class="text-xs text-slate-500 mt-1">Total SKUs registered</p>
+          ${products.length === 0 ? '<p class="text-xs text-slate-600 mt-3">Add products to get started →</p>' : `
+            <div class="mt-3 space-y-1 max-h-32 overflow-y-auto">${products.slice(0, 5).map(p => `
+              <div class="flex justify-between text-xs"><span class="text-slate-300 truncate">${p.name || p.internal_code}</span><span class="text-emerald-400 font-mono">Rp ${fmt(p.selling_price)}</span></div>
+            `).join('')}${products.length > 5 ? `<p class="text-xs text-slate-600">+${products.length - 5} more</p>` : ''}</div>
+          `}
+        </div>
+        <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 kpi-card">
+          <h4 class="text-sm font-semibold text-slate-400 mb-3 flex items-center gap-2"><i data-lucide="alert-circle" style="width:14px;height:14px"></i> Fee Breakdown</h4>
+          ${settlements.length === 0 ? '<p class="text-xs text-slate-600">Import settlements to see fee analysis</p>' : `
+            <div class="space-y-2">
+              ${feeRow('Commission', settlements.reduce((s,r) => s + (parseFloat(r.commission_fee)||0), 0))}
+              ${feeRow('Payment Fee', settlements.reduce((s,r) => s + (parseFloat(r.payment_fee)||0), 0))}
+              ${feeRow('Shipping', settlements.reduce((s,r) => s + (parseFloat(r.shipping_cost)||0), 0))}
+              ${feeRow('Affiliate', settlements.reduce((s,r) => s + (parseFloat(r.affiliate_fee)||0), 0))}
+              ${feeRow('Ads Fee', settlements.reduce((s,r) => s + (parseFloat(r.ads_fee)||0), 0))}
+              <div class="flex justify-between text-sm font-semibold border-t border-slate-700 pt-2 mt-2"><span class="text-slate-300">Total Fees</span><span class="text-red-400">Rp ${fmt(totalFees)}</span></div>
+            </div>
+          `}
+        </div>
       </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${activeTab === 'stock' ? `
-          <table class="tbl"><thead><tr><th>SKU</th><th>Produk</th><th>Stok</th><th>Min. Stok</th><th>Status</th></tr></thead><tbody>
-          ${products.filter(p => parseData(p).product_type !== 'Jasa').map(p => {
-            const d = parseData(p); const stock = calcStock(d.sku);
-            const isLow = stock <= (d.min_stock || 0);
-            return `<tr><td class="font-mono text-xs font-600">${d.sku}</td><td class="font-600">${d.name}</td><td class="font-mono font-600 ${isLow?'text-red-600':''}">${fmt(stock)} ${d.unit||''}</td><td class="font-mono">${fmt(d.min_stock||0)}</td><td>${isLow?'<span class="status-badge bg-red-100 text-red-600">Rendah</span>':'<span class="status-badge bg-green-100 text-green-700">Normal</span>'}</td></tr>`; }).join('')}
-          ${products.filter(p => parseData(p).product_type !== 'Jasa').length === 0 ? '<tr><td colspan="5" class="text-center text-navy-400 py-6">Belum ada produk stok.</td></tr>' : ''}
-          </tbody></table>
-        ` : `
-          <table class="tbl"><thead><tr><th>Tanggal</th><th>Tipe</th><th>Produk</th><th>Masuk</th><th>Keluar</th><th>Ref</th></tr></thead><tbody>
-          ${moves.slice().reverse().map(m => { const d=parseData(m); return `<tr><td>${fmtDate(d.date)}</td><td><span class="status-badge ${d.qty_in?'bg-green-100 text-green-700':'bg-red-100 text-red-600'}">${d.type}</span></td><td class="font-600">${d.product_name||d.sku}</td><td class="font-mono text-green-600 font-600">${d.qty_in?'+'+fmt(d.qty_in):'-'}</td><td class="font-mono text-red-600 font-600">${d.qty_out?'-'+fmt(d.qty_out):'-'}</td><td class="font-mono text-xs">${d.reference||'-'}</td></tr>`; }).join('')}
-          ${moves.length === 0 ? '<tr><td colspan="6" class="text-center text-navy-400 py-6">Belum ada pergerakan stok.</td></tr>' : ''}
-          </tbody></table>
-        `}
+
+      <!-- Important Note -->
+      <div class="bg-amber-950/30 border border-amber-800/40 rounded-xl p-4 text-sm">
+        <div class="flex gap-2 items-start">
+          <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:2px" class="text-amber-400"></i>
+          <div>
+            <p class="text-amber-300 font-semibold mb-1">Profit Calculation Logic</p>
+            <p class="text-amber-200/70">Margin dihitung dari <strong>Settlement Final</strong> dikurangi COGS + Ads + Fee. Bukan dari Sales Order. Ads dihitung terpisah dengan ROAS & cost per order.</p>
+          </div>
+        </div>
       </div>
-    </div>`;
-}
-
-function showAdjustmentForm() {
-  const products = getByType('product').filter(p => {const d=parseData(p); return d.product_type !== 'Jasa' && d.status !== 'Nonaktif';});
-  showModal('Penyesuaian Stok', `
-    <form onsubmit="saveAdjustment(event)" class="space-y-3">
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Produk *</label><select name="product" class="input-field" required>
-        <option value="">Pilih Produk</option>
-        ${products.map(p => { const d=parseData(p); return `<option value="${d.sku}|${d.name}|${d.buy_price||0}">${d.sku} - ${d.name} (Stok: ${calcStock(d.sku)})</option>`; }).join('')}
-      </select></div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Tipe</label><select name="type" class="input-field"><option value="in">Adjustment In (+)</option><option value="out">Adjustment Out (-)</option></select></div>
-        <div><label class="text-xs font-600 text-navy-600 block mb-1">Qty *</label><input name="qty" type="number" class="input-field" min="1" required></div>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Catatan</label><input name="notes" class="input-field"></div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-primary">Simpan</button></div>
-    </form>`);
-}
-
-async function saveAdjustment(e) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const [sku, name, cost] = (f.get('product')||'').split('|');
-  const qty = Number(f.get('qty'));
-  const type = f.get('type');
-  const isIn = type === 'in';
-  await createStockMove(isIn ? 'Adjustment In' : 'Adjustment Out', sku, name, isIn?qty:0, isIn?0:qty, f.get('notes')||'Manual Adjustment', Number(cost));
-  // Journal for adjustment
-  const value = qty * Number(cost);
-  if (value > 0) {
-    await createJournal(`Penyesuaian stok ${name}`, [
-      {account_code: isIn?'1300':'6100', account_name: isIn?'Persediaan':'Biaya Operasional', debit: value, credit: 0},
-      {account_code: isIn?'3100':'1300', account_name: isIn?'Modal':'Persediaan', debit: 0, credit: value}
-    ], 'Adjustment');
-  }
-  toast('Penyesuaian stok berhasil');
-  closeModal();
-}
-
-// ============================================================
-// INVOICES
-// ============================================================
-function renderInvoices(el) {
-  const invoices = getByType('invoice');
-  const bills = getByType('vendor_bill');
-  const activeTab = window._invTabType || 'customer';
-
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Invoice & Bill</h2>
-      </div>
-      <div class="flex gap-1 mb-4 border-b border-navy-100">
-        <button class="tab-btn ${activeTab==='customer'?'active':''}" onclick="window._invTabType='customer';renderCurrentPage()">Customer Invoice</button>
-        <button class="tab-btn ${activeTab==='vendor'?'active':''}" onclick="window._invTabType='vendor';renderCurrentPage()">Vendor Bill</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${activeTab === 'customer' ? `
-          ${invoices.length ? `<table class="tbl"><thead><tr><th>No</th><th>Customer</th><th>Tanggal</th><th>Jatuh Tempo</th><th>Total</th><th>Terbayar</th><th>Status</th><th></th></tr></thead><tbody>
-          ${invoices.map(inv => { const d=parseData(inv); return `<tr><td class="font-mono text-xs font-600">${d.number}</td><td class="font-600">${d.customer_name||'-'}</td><td>${fmtDate(d.date)}</td><td>${fmtDate(d.due_date)}</td><td class="font-mono font-600">${fmtCurrency(d.total)}</td><td class="font-mono">${fmtCurrency(d.paid_amount||0)}</td><td><span class="status-badge ${statusColor(inv.status)}">${inv.status}</span></td><td><button class="btn btn-secondary text-xs py-1 px-2" onclick="showInvoiceDetail('${inv.__backendId}','invoice')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-          </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada invoice. Buat dari Sales Order.</div>'}
-        ` : `
-          ${bills.length ? `<table class="tbl"><thead><tr><th>No</th><th>Vendor</th><th>Tanggal</th><th>Jatuh Tempo</th><th>Total</th><th>Terbayar</th><th>Status</th><th></th></tr></thead><tbody>
-          ${bills.map(b => { const d=parseData(b); return `<tr><td class="font-mono text-xs font-600">${d.number}</td><td class="font-600">${d.vendor_name||'-'}</td><td>${fmtDate(d.date)}</td><td>${fmtDate(d.due_date)}</td><td class="font-mono font-600">${fmtCurrency(d.total)}</td><td class="font-mono">${fmtCurrency(d.paid_amount||0)}</td><td><span class="status-badge ${statusColor(b.status)}">${b.status}</span></td><td><button class="btn btn-secondary text-xs py-1 px-2" onclick="showInvoiceDetail('${b.__backendId}','vendor_bill')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td></tr>`; }).join('')}
-          </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada vendor bill. Buat dari Purchase Order.</div>'}
-        `}
-      </div>
-    </div>`;
-}
-
-function showInvoiceDetail(backendId, type) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const isInv = type === 'invoice';
-  const status = rec.status;
-  const lines = d.lines || [];
-  const remaining = (d.total || 0) - (d.paid_amount || 0);
-
-  let actions = '';
-  if (status === 'Draft') actions += `<button class="btn btn-primary" onclick="postInvoice('${backendId}','${type}')">Post</button> <button class="btn btn-danger" onclick="cancelInvoice('${backendId}')">Cancel</button>`;
-  if (status === 'Posted' || status === 'Partially Paid') actions += `<button class="btn btn-success" onclick="showPaymentForm('${backendId}','${type}')">Catat Pembayaran</button>`;
-
-  showModal(`${isInv?'Invoice':'Vendor Bill'}: ${d.number}`, `
-    <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
-      <div><span class="text-navy-500">${isInv?'Customer':'Vendor'}:</span> <span class="font-600">${isInv?d.customer_name:d.vendor_name}</span></div>
-      <div><span class="text-navy-500">Tanggal:</span> <span class="font-600">${fmtDate(d.date)}</span></div>
-      <div><span class="text-navy-500">Jatuh Tempo:</span> <span class="font-600">${fmtDate(d.due_date)}</span></div>
-      <div><span class="text-navy-500">Ref:</span> <span class="font-600">${d.so_reference||d.po_reference||'-'}</span></div>
-      <div><span class="text-navy-500">Status:</span> <span class="status-badge ${statusColor(status)}">${status}</span></div>
     </div>
-    <table class="tbl mb-4"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>
-    ${lines.map(l => `<tr><td>${l.name}</td><td class="font-mono">${fmt(l.qty)}</td><td class="font-mono">${fmtCurrency(l.price)}</td><td class="font-mono font-600">${fmtCurrency(l.subtotal)}</td></tr>`).join('')}
-    </tbody></table>
-    <div class="text-right mb-2"><span class="text-sm text-navy-500">Total: <span class="font-800 text-navy-900">${fmtCurrency(d.total)}</span></span></div>
-    <div class="text-right mb-2"><span class="text-sm text-navy-500">Terbayar: <span class="font-600 text-green-600">${fmtCurrency(d.paid_amount||0)}</span></span></div>
-    <div class="text-right mb-4"><span class="text-sm text-navy-500">Sisa: <span class="font-800 ${remaining>0?'text-red-600':'text-green-600'}">${fmtCurrency(remaining)}</span></span></div>
-    <div class="flex gap-2 justify-end">${actions}</div>`, 700);
+  `;
   lucide.createIcons();
 }
 
-async function postInvoice(backendId, type) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const isInv = type === 'invoice';
-  // Create journal entry
-  if (isInv) {
-    await createJournal(`Invoice ${d.number} posted`, [
-      {account_code:'1200',account_name:'Piutang Usaha',debit:d.total,credit:0},
-      {account_code:'4100',account_name:'Penjualan',debit:0,credit:d.total}
-    ], d.number);
-  } else {
-    await createJournal(`Bill ${d.number} posted`, [
-      {account_code:'5200',account_name:'Pembelian',debit:d.total,credit:0},
-      {account_code:'2100',account_name:'Hutang Usaha',debit:0,credit:d.total}
-    ], d.number);
-  }
-  await updateRecord(rec, d, 'Posted');
-  toast(`${isInv?'Invoice':'Bill'} di-post & jurnal dibuat`);
-  closeModal();
+function kpiCard(icon, label, value, color) {
+  const colorMap = { emerald: 'text-emerald-400', cyan: 'text-cyan-400', violet: 'text-violet-400', blue: 'text-blue-400', amber: 'text-amber-400', rose: 'text-rose-400', red: 'text-red-400' };
+  return `<div class="bg-slate-900 rounded-xl border border-slate-800 p-3 card-hover kpi-card">
+    <div class="flex items-center gap-2 mb-1"><i data-lucide="${icon}" style="width:14px;height:14px" class="text-slate-500"></i><span class="text-xs text-slate-500">${label}</span></div>
+    <div class="text-xl font-bold ${colorMap[color] || 'text-white'} font-mono">${value}</div>
+  </div>`;
 }
 
-async function cancelInvoice(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec) { await updateRecord(rec, parseData(rec), 'Cancelled'); toast('Dibatalkan'); closeModal(); }
+function feeRow(label, amount) {
+  return `<div class="flex justify-between text-xs"><span class="text-slate-400">${label}</span><span class="text-slate-300 font-mono">Rp ${fmt(amount)}</span></div>`;
 }
 
-// ============================================================
-// PAYMENTS
-// ============================================================
-function renderPayments(el) {
-  const payments = getByType('payment');
-  el.innerHTML = `
-    <div class="fade-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-800 text-navy-900">Pembayaran</h2>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
-        ${payments.length ? `<table class="tbl"><thead><tr><th>Tanggal</th><th>Tipe</th><th>Pihak</th><th>Referensi</th><th>Jumlah</th></tr></thead><tbody>
-        ${payments.slice().reverse().map(p => { const d=parseData(p); return `<tr><td>${fmtDate(d.date)}</td><td><span class="status-badge ${d.type==='customer_payment'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${d.type==='customer_payment'?'Terima':'Bayar'}</span></td><td class="font-600">${d.party_name||'-'}</td><td class="font-mono text-xs">${d.reference||'-'}</td><td class="font-mono font-600">${fmtCurrency(d.amount)}</td></tr>`; }).join('')}
-        </tbody></table>` : '<div class="p-8 text-center text-navy-400">Belum ada pembayaran. Catat pembayaran dari halaman Invoice.</div>'}
-      </div>
-    </div>`;
-}
+// ============ SALES ORDERS ============
+const salesFields = [
+  { key: 'external_order_id', label: 'Order ID', type: 'text', required: true },
+  { key: 'channel', label: 'Channel', type: 'text' },
+  { key: 'customer_name', label: 'Customer', type: 'text' },
+  { key: 'order_date', label: 'Order Date', type: 'text' },
+  { key: 'order_status', label: 'Status', type: 'select', options: ['pending','processing','shipped','delivered','cancelled'] },
+  { key: 'product_name', label: 'Product', type: 'text' },
+  { key: 'qty', label: 'Qty', type: 'number' },
+  { key: 'price', label: 'Price', type: 'number' },
+  { key: 'shipping_fee', label: 'Shipping Fee', type: 'number' },
+  { key: 'tracking_no', label: 'Tracking No', type: 'text' },
+  { key: 'is_cod', label: 'COD', type: 'select', options: ['yes','no'] },
+  { key: 'pic', label: 'PIC', type: 'text' },
+];
+function renderSales() { renderCRUD('sales_order', 'Sales Orders', salesFields); }
 
-function showPaymentForm(invoiceBackendId, type) {
-  const rec = ALL_DATA.find(d => d.__backendId === invoiceBackendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const remaining = (d.total || 0) - (d.paid_amount || 0);
-  const isInv = type === 'invoice';
+// ============ SETTLEMENTS ============
+const settlementFields = [
+  { key: 'external_order_id', label: 'Order ID', type: 'text', required: true },
+  { key: 'order_date', label: 'Order Date', type: 'text' },
+  { key: 'settled_date', label: 'Settled Date', type: 'text' },
+  { key: 'total_revenue', label: 'Revenue', type: 'number' },
+  { key: 'seller_discount', label: 'Seller Discount', type: 'number' },
+  { key: 'refund_amount', label: 'Refund', type: 'number' },
+  { key: 'commission_fee', label: 'Commission', type: 'number' },
+  { key: 'payment_fee', label: 'Payment Fee', type: 'number' },
+  { key: 'shipping_cost', label: 'Shipping Cost', type: 'number' },
+  { key: 'affiliate_fee', label: 'Affiliate Fee', type: 'number' },
+  { key: 'ads_fee', label: 'Ads Fee', type: 'number' },
+  { key: 'voucher_fee', label: 'Voucher Fee', type: 'number' },
+  { key: 'adjustment_amount', label: 'Adjustment', type: 'number' },
+  { key: 'total_settlement', label: 'Total Settlement', type: 'number' },
+];
+function renderSettlements() { renderCRUD('settlement', 'Settlements', settlementFields); }
 
-  showModal('Catat Pembayaran', `
-    <form onsubmit="savePayment(event,'${invoiceBackendId}','${type}')" class="space-y-3">
-      <div class="bg-navy-50 p-3 rounded-lg text-sm mb-2">
-        <p><span class="text-navy-500">${isInv?'Invoice':'Bill'}:</span> <span class="font-600">${d.number}</span></p>
-        <p><span class="text-navy-500">Sisa:</span> <span class="font-700 text-red-600">${fmtCurrency(remaining)}</span></p>
-      </div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Jumlah Pembayaran *</label><input name="amount" type="number" class="input-field" value="${remaining}" max="${remaining}" min="1" required></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Tanggal</label><input name="date" type="date" class="input-field" value="${new Date().toISOString().split('T')[0]}"></div>
-      <div><label class="text-xs font-600 text-navy-600 block mb-1">Catatan</label><input name="notes" class="input-field"></div>
-      <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button><button type="submit" class="btn btn-success">Bayar</button></div>
-    </form>`);
-}
+// ============ PURCHASES ============
+const purchaseFields = [
+  { key: 'supplier_name', label: 'Supplier', type: 'text', required: true },
+  { key: 'order_date', label: 'Order Date', type: 'text' },
+  { key: 'status', label: 'Status', type: 'select', options: ['draft','ordered','received','partial'] },
+  { key: 'product_name', label: 'Product', type: 'text' },
+  { key: 'qty', label: 'Qty', type: 'number' },
+  { key: 'price', label: 'Unit Price', type: 'number' },
+  { key: 'total_amount', label: 'Total', type: 'number' },
+];
+function renderPurchases() { renderCRUD('purchase_order', 'Purchase Orders', purchaseFields); }
 
-async function savePayment(e, invoiceBackendId, type) {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const amount = Number(f.get('amount'));
-  const rec = ALL_DATA.find(d => d.__backendId === invoiceBackendId);
-  if (!rec) return;
-  const d = parseData(rec);
-  const isInv = type === 'invoice';
+// ============ INVENTORY ============
+function renderInventory() {
+  const main = document.getElementById('mainContent');
+  const movements = getByType('stock_movement');
+  const products = getByType('product');
 
-  // Create payment record
-  await createRecord('payment', {
-    type: isInv ? 'customer_payment' : 'vendor_payment',
-    party_name: isInv ? d.customer_name : d.vendor_name,
-    reference: d.number, amount, date: f.get('date'),
-    notes: f.get('notes')
+  // Calculate stock summary
+  const stockMap = {};
+  movements.forEach(m => {
+    const k = m.product_name || m.product_id || 'unknown';
+    if (!stockMap[k]) stockMap[k] = { name: k, qty_in: 0, qty_out: 0 };
+    if (m.movement_type === 'IN') stockMap[k].qty_in += (parseFloat(m.qty) || 0);
+    else stockMap[k].qty_out += (parseFloat(m.qty) || 0);
   });
+  const summary = Object.values(stockMap).map(s => ({ ...s, on_hand: s.qty_in - s.qty_out }));
 
-  // Journal
-  if (isInv) {
-    await createJournal(`Pembayaran ${d.number}`, [
-      {account_code:'1100',account_name:'Kas/Bank',debit:amount,credit:0},
-      {account_code:'1200',account_name:'Piutang Usaha',debit:0,credit:amount}
-    ], d.number);
-  } else {
-    await createJournal(`Pembayaran ${d.number}`, [
-      {account_code:'2100',account_name:'Hutang Usaha',debit:amount,credit:0},
-      {account_code:'1100',account_name:'Kas/Bank',debit:0,credit:amount}
-    ], d.number);
+  main.innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-semibold">Inventory</h3>
+        <button id="addMovement" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+          <i data-lucide="plus" style="width:14px;height:14px"></i> Stock Movement
+        </button>
+      </div>
+
+      ${summary.length > 0 ? `
+      <div class="bg-slate-900 rounded-xl border border-slate-800 p-4">
+        <h4 class="text-sm font-semibold text-slate-400 mb-3">Stock Summary</h4>
+        <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-slate-800/70">
+          <th class="text-left px-3 py-2 text-xs text-slate-400">Product</th>
+          <th class="text-right px-3 py-2 text-xs text-slate-400">IN</th>
+          <th class="text-right px-3 py-2 text-xs text-slate-400">OUT</th>
+          <th class="text-right px-3 py-2 text-xs text-slate-400">On Hand</th>
+        </tr></thead><tbody>${summary.map(s => `
+          <tr class="border-t border-slate-800/50">
+            <td class="px-3 py-2">${s.name}</td>
+            <td class="px-3 py-2 text-right text-emerald-400 font-mono">${fmt(s.qty_in)}</td>
+            <td class="px-3 py-2 text-right text-red-400 font-mono">${fmt(s.qty_out)}</td>
+            <td class="px-3 py-2 text-right font-bold font-mono ${s.on_hand <= 0 ? 'text-red-400' : 'text-slate-200'}">${fmt(s.on_hand)}</td>
+          </tr>
+        `).join('')}</tbody></table></div>
+      </div>` : ''}
+
+      <div class="bg-slate-900 rounded-xl border border-slate-800 p-4">
+        <h4 class="text-sm font-semibold text-slate-400 mb-3">Recent Movements (${movements.length})</h4>
+        ${movements.length === 0 ? '<p class="text-xs text-slate-600 text-center py-8">No movements yet</p>' : `
+          <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-slate-800/70">
+            <th class="text-left px-3 py-2 text-xs text-slate-400">Date</th>
+            <th class="text-left px-3 py-2 text-xs text-slate-400">Product</th>
+            <th class="text-left px-3 py-2 text-xs text-slate-400">Type</th>
+            <th class="text-right px-3 py-2 text-xs text-slate-400">Qty</th>
+            <th class="text-left px-3 py-2 text-xs text-slate-400">Ref</th>
+          </tr></thead><tbody>${movements.slice(-20).reverse().map(m => `
+            <tr class="border-t border-slate-800/50">
+              <td class="px-3 py-2 text-xs">${m.date || '-'}</td>
+              <td class="px-3 py-2">${m.product_name || '-'}</td>
+              <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-xs font-medium ${m.movement_type === 'IN' ? 'bg-emerald-900/50 text-emerald-400' : 'bg-red-900/50 text-red-400'}">${m.movement_type}</span></td>
+              <td class="px-3 py-2 text-right font-mono">${fmt(m.qty)}</td>
+              <td class="px-3 py-2 text-xs text-slate-500">${m.reference_type || ''} ${m.reference_id || ''}</td>
+            </tr>
+          `).join('')}</tbody></table></div>
+        `}
+      </div>
+    </div>
+  `;
+
+  const movementFields = [
+    { key: 'product_name', label: 'Product', type: 'text', required: true },
+    { key: 'movement_type', label: 'Type', type: 'select', options: ['IN','OUT'], required: true },
+    { key: 'qty', label: 'Quantity', type: 'number', required: true },
+    { key: 'unit_cost', label: 'Unit Cost', type: 'number' },
+    { key: 'reference_type', label: 'Ref Type', type: 'select', options: ['PO','SO','RETURN','ADJUSTMENT'] },
+    { key: 'reference_id', label: 'Ref ID', type: 'text' },
+    { key: 'date', label: 'Date', type: 'text' },
+  ];
+  document.getElementById('addMovement').addEventListener('click', () => showFormModal('stock_movement', movementFields, null));
+  lucide.createIcons();
+}
+
+// ============ RETURNS ============
+const returnFields = [
+  { key: 'sales_order_id', label: 'Sales Order ID', type: 'text', required: true },
+  { key: 'return_type', label: 'Type', type: 'select', options: ['cancel','return','refund'], required: true },
+  { key: 'return_date', label: 'Date', type: 'text' },
+  { key: 'status', label: 'Status', type: 'select', options: ['pending','approved','completed'] },
+  { key: 'product_name', label: 'Product', type: 'text' },
+  { key: 'qty', label: 'Qty', type: 'number' },
+  { key: 'refund_amount', label: 'Refund Amount', type: 'number' },
+  { key: 'notes', label: 'Notes', type: 'text' },
+];
+function renderReturns() { renderCRUD('return', 'Returns', returnFields); }
+
+// ============ ADS ============
+function renderAds() {
+  const main = document.getElementById('mainContent');
+  const campaigns = getByType('ads_campaign');
+  const batches = getByType('ads_batch');
+  const payments = getByType('ads_payment');
+
+  const totalSpend = campaigns.reduce((s, c) => s + (parseFloat(c.cost) || 0), 0);
+  const totalClicks = campaigns.reduce((s, c) => s + (parseFloat(c.clicks) || 0), 0);
+  const totalConversions = campaigns.reduce((s, c) => s + (parseFloat(c.conversions) || 0), 0);
+  const avgCPC = totalClicks > 0 ? (totalSpend / totalClicks) : 0;
+  const costPerOrder = totalConversions > 0 ? (totalSpend / totalConversions) : 0;
+
+  main.innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        ${kpiCard('megaphone', 'Total Spend', 'Rp ' + fmtK(totalSpend), 'amber')}
+        ${kpiCard('mouse-pointer', 'Total Clicks', fmt(totalClicks), 'blue')}
+        ${kpiCard('target', 'Conversions', fmt(totalConversions), 'emerald')}
+        ${kpiCard('calculator', 'Cost/Order', 'Rp ' + fmt(Math.round(costPerOrder)), 'violet')}
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-2">
+        <button class="tab-btn active px-3 py-1.5 rounded-lg text-sm" data-tab="campaigns">Campaigns</button>
+        <button class="tab-btn px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-400" data-tab="batches">Batches</button>
+        <button class="tab-btn px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-400" data-tab="payments">Payments</button>
+      </div>
+      <div id="adsTabContent"></div>
+    </div>
+  `;
+
+  let activeTab = 'campaigns';
+  const campaignFields = [
+    { key: 'campaign_name', label: 'Campaign', type: 'text', required: true },
+    { key: 'platform', label: 'Platform', type: 'select', options: ['tiktok','shopee','google','meta','other'] },
+    { key: 'product_name', label: 'Product', type: 'text' },
+    { key: 'pic', label: 'PIC', type: 'text' },
+    { key: 'cost', label: 'Cost', type: 'number' },
+    { key: 'impressions', label: 'Impressions', type: 'number' },
+    { key: 'clicks', label: 'Clicks', type: 'number' },
+    { key: 'conversions', label: 'Conversions', type: 'number' },
+    { key: 'date', label: 'Date', type: 'text' },
+  ];
+  const batchFields = [
+    { key: 'ads_account', label: 'Account', type: 'text', required: true },
+    { key: 'start_date', label: 'Start', type: 'text' },
+    { key: 'end_date', label: 'End', type: 'text' },
+    { key: 'total_spend', label: 'Spend', type: 'number' },
+    { key: 'tax_rate', label: 'Tax %', type: 'number' },
+    { key: 'total_billed', label: 'Billed', type: 'number' },
+  ];
+  const paymentFields = [
+    { key: 'ads_account', label: 'Account', type: 'text', required: true },
+    { key: 'payment_date', label: 'Date', type: 'text' },
+    { key: 'amount', label: 'Amount', type: 'number' },
+    { key: 'method', label: 'Method', type: 'text' },
+    { key: 'reference_no', label: 'Reference', type: 'text' },
+  ];
+
+  function renderAdsTab() {
+    const container = document.getElementById('adsTabContent');
+    const tabConfig = {
+      campaigns: { type: 'ads_campaign', fields: campaignFields, data: campaigns },
+      batches: { type: 'ads_batch', fields: batchFields, data: batches },
+      payments: { type: 'ads_payment', fields: paymentFields, data: payments },
+    };
+    const t = tabConfig[activeTab];
+    container.innerHTML = `
+      <div class="flex justify-end mb-2">
+        <button id="adsAdd" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"><i data-lucide="plus" style="width:14px;height:14px"></i> Add</button>
+      </div>
+      ${t.data.length === 0 ? `<div class="text-center py-12 text-slate-500"><p>No ${activeTab} yet</p></div>` : `
+        <div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-sm"><thead><tr class="bg-slate-800/70">${t.fields.slice(0,6).map(f => `<th class="text-left px-3 py-2 text-xs text-slate-400">${f.label}</th>`).join('')}<th class="px-3 py-2 text-xs">Actions</th></tr></thead><tbody>${t.data.map(item => `
+          <tr class="border-t border-slate-800/50 hover:bg-slate-800/30">
+            ${t.fields.slice(0,6).map(f => `<td class="px-3 py-2 truncate max-w-[140px] font-mono text-xs">${item[f.key] ?? '-'}</td>`).join('')}
+            <td class="px-3 py-2"><button class="ads-del p-1 text-slate-400 hover:text-red-400" data-id="${item.__backendId}"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td>
+          </tr>
+        `).join('')}</tbody></table></div>
+      `}
+    `;
+    document.getElementById('adsAdd').addEventListener('click', () => showFormModal(t.type, t.fields, null));
+    container.querySelectorAll('.ads-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = t.data.find(i => i.__backendId === btn.dataset.id);
+        if (item) showDeleteConfirm(item);
+      });
+    });
+    lucide.createIcons();
   }
 
-  // Update invoice
-  const newPaid = (d.paid_amount || 0) + amount;
-  d.paid_amount = newPaid;
-  const newStatus = newPaid >= d.total ? 'Paid' : 'Partially Paid';
-  await updateRecord(rec, d, newStatus);
-
-  toast(`Pembayaran ${fmtCurrency(amount)} dicatat`);
-  closeModal();
-}
-
-// ============================================================
-// ACCOUNTING
-// ============================================================
-function renderAccounting(el) {
-  const journals = getByType('journal');
-  const activeTab = window._accTab || 'ledger';
-
-  el.innerHTML = `
-    <div class="fade-in">
-      <h2 class="text-2xl font-800 text-navy-900 mb-5">Akuntansi</h2>
-      <div class="flex gap-1 mb-4 border-b border-navy-100 flex-wrap">
-        <button class="tab-btn ${activeTab==='ledger'?'active':''}" onclick="window._accTab='ledger';renderCurrentPage()">General Ledger</button>
-        <button class="tab-btn ${activeTab==='trial'?'active':''}" onclick="window._accTab='trial';renderCurrentPage()">Trial Balance</button>
-        <button class="tab-btn ${activeTab==='pl'?'active':''}" onclick="window._accTab='pl';renderCurrentPage()">Laba Rugi</button>
-        <button class="tab-btn ${activeTab==='bs'?'active':''}" onclick="window._accTab='bs';renderCurrentPage()">Neraca</button>
-        <button class="tab-btn ${activeTab==='ar'?'active':''}" onclick="window._accTab='ar';renderCurrentPage()">Piutang</button>
-        <button class="tab-btn ${activeTab==='ap'?'active':''}" onclick="window._accTab='ap';renderCurrentPage()">Hutang</button>
-      </div>
-      <div class="bg-white rounded-xl border border-navy-100 overflow-hidden p-5" id="acc-content"></div>
-    </div>`;
-
-  const content = document.getElementById('acc-content');
-  if (activeTab === 'ledger') renderLedger(content, journals);
-  else if (activeTab === 'trial') renderTrialBalance(content);
-  else if (activeTab === 'pl') renderPL(content);
-  else if (activeTab === 'bs') renderBS(content);
-  else if (activeTab === 'ar') renderAR(content);
-  else if (activeTab === 'ap') renderAP(content);
-}
-
-function renderLedger(el, journals) {
-  el.innerHTML = `
-    <h3 class="font-700 text-navy-900 mb-3">General Ledger</h3>
-    ${journals.length ? `<table class="tbl"><thead><tr><th>Tanggal</th><th>Deskripsi</th><th>Ref</th><th>Akun</th><th>Debit</th><th>Kredit</th></tr></thead><tbody>
-    ${journals.slice().reverse().map(j => {
-      const d = parseData(j);
-      return (d.entries||[]).map((e,i) => `<tr><td>${i===0?fmtDate(d.date):''}</td><td>${i===0?d.description:''}</td><td class="font-mono text-xs">${i===0?(d.reference||''):''}</td><td class="font-600">${e.account_code} ${e.account_name}</td><td class="font-mono ${e.debit?'text-navy-900':''}">${e.debit?fmtCurrency(e.debit):'-'}</td><td class="font-mono ${e.credit?'text-navy-900':''}">${e.credit?fmtCurrency(e.credit):'-'}</td></tr>`).join('');
-    }).join('')}
-    </tbody></table>` : '<p class="text-navy-400 text-sm">Belum ada jurnal. Jurnal akan tercipta otomatis dari transaksi.</p>'}`;
-}
-
-function getAccountBalances() {
-  const coa = getCOA();
-  const journals = getByType('journal');
-  const balances = {};
-  coa.forEach(a => { balances[a.code] = {code:a.code,name:a.name,type:a.type,normal:a.normal,debit:0,credit:0}; });
-  journals.forEach(j => {
-    (parseData(j).entries||[]).forEach(e => {
-      if (!balances[e.account_code]) balances[e.account_code] = {code:e.account_code,name:e.account_name,type:'',normal:'',debit:0,credit:0};
-      balances[e.account_code].debit += (e.debit||0);
-      balances[e.account_code].credit += (e.credit||0);
+  main.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      main.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.className = b.className.replace('text-emerald-300','text-slate-400'); if (!b.classList.contains('active')) { b.style.background=''; } });
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      renderAdsTab();
     });
   });
-  return Object.values(balances);
+  renderAdsTab();
+  lucide.createIcons();
 }
 
-function renderTrialBalance(el) {
-  const accs = getAccountBalances();
-  let totalD = 0, totalC = 0;
-  accs.forEach(a => { totalD += a.debit; totalC += a.credit; });
-  el.innerHTML = `
-    <h3 class="font-700 text-navy-900 mb-3">Trial Balance</h3>
-    <table class="tbl"><thead><tr><th>Kode</th><th>Nama Akun</th><th>Debit</th><th>Kredit</th></tr></thead><tbody>
-    ${accs.filter(a => a.debit || a.credit).map(a => `<tr><td class="font-mono text-xs">${a.code}</td><td class="font-600">${a.name}</td><td class="font-mono">${fmtCurrency(a.debit)}</td><td class="font-mono">${fmtCurrency(a.credit)}</td></tr>`).join('')}
-    <tr class="font-700 bg-navy-50"><td></td><td>TOTAL</td><td class="font-mono">${fmtCurrency(totalD)}</td><td class="font-mono">${fmtCurrency(totalC)}</td></tr>
-    </tbody></table>
-    ${Math.abs(totalD - totalC) > 0.01 ? '<p class="text-red-600 text-xs mt-2 font-600">⚠ Debit dan Kredit tidak seimbang!</p>' : '<p class="text-green-600 text-xs mt-2 font-600">✓ Balance</p>'}`;
-}
+// ============ ACCOUNTING ============
+function renderAccounting() {
+  const main = document.getElementById('mainContent');
+  const journals = getByType('journal_entry');
+  const coa = getByType('coa');
 
-function renderPL(el) {
-  const accs = getAccountBalances();
-  let revenue = 0, cogs = 0, expenses = 0;
-  accs.forEach(a => {
-    if (a.code === '4100') revenue += (a.credit - a.debit);
-    if (a.code === '5100') cogs += (a.debit - a.credit);
-    if (a.code === '5200' || a.code === '6100') expenses += (a.debit - a.credit);
-  });
-  const grossProfit = revenue - cogs;
-  const netProfit = grossProfit - expenses;
-
-  el.innerHTML = `
-    <h3 class="font-700 text-navy-900 mb-3">Laporan Laba Rugi</h3>
-    <table class="tbl">
-      <tr><td class="font-600">Penjualan</td><td class="font-mono text-right">${fmtCurrency(revenue)}</td></tr>
-      <tr><td class="font-600">HPP</td><td class="font-mono text-right text-red-600">(${fmtCurrency(cogs)})</td></tr>
-      <tr class="bg-navy-50 font-700"><td>Laba Kotor</td><td class="font-mono text-right">${fmtCurrency(grossProfit)}</td></tr>
-      <tr><td class="font-600">Biaya Operasional & Pembelian</td><td class="font-mono text-right text-red-600">(${fmtCurrency(expenses)})</td></tr>
-      <tr class="bg-navy-900 text-white font-700"><td>Laba Bersih</td><td class="font-mono text-right text-lg">${fmtCurrency(netProfit)}</td></tr>
-    </table>`;
-}
-
-function renderBS(el) {
-  const accs = getAccountBalances();
-  let assets = {}, liabilities = {}, equity = {};
-  // Also add net income
-  let revenue = 0, totalExpense = 0;
-  accs.forEach(a => {
-    const bal = a.normal === 'Debit' ? (a.debit - a.credit) : (a.credit - a.debit);
-    if (a.type === 'Aset') assets[a.code] = {name:a.name,balance:bal};
-    else if (a.type === 'Liabilitas') liabilities[a.code] = {name:a.name,balance:bal};
-    else if (a.type === 'Ekuitas') equity[a.code] = {name:a.name,balance:bal};
-    else if (a.type === 'Pendapatan') revenue += bal;
-    else if (a.type === 'Beban') totalExpense += bal;
-  });
-  const netIncome = revenue - totalExpense;
-  const totalAssets = Object.values(assets).reduce((s,a) => s + a.balance, 0);
-  const totalLiab = Object.values(liabilities).reduce((s,a) => s + a.balance, 0);
-  const totalEquity = Object.values(equity).reduce((s,a) => s + a.balance, 0) + netIncome;
-
-  el.innerHTML = `
-    <h3 class="font-700 text-navy-900 mb-3">Neraca</h3>
-    <div class="grid grid-cols-2 gap-6">
-      <div>
-        <h4 class="font-700 text-navy-700 mb-2 uppercase text-xs tracking-wider">Aset</h4>
-        <table class="tbl">
-        ${Object.values(assets).map(a => `<tr><td>${a.name}</td><td class="font-mono text-right">${fmtCurrency(a.balance)}</td></tr>`).join('')}
-        <tr class="font-700 bg-navy-50"><td>Total Aset</td><td class="font-mono text-right">${fmtCurrency(totalAssets)}</td></tr>
-        </table>
+  main.innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex gap-2 mb-2">
+        <button class="tab-btn active px-3 py-1.5 rounded-lg text-sm" data-tab="journals">Journal Entries</button>
+        <button class="tab-btn px-3 py-1.5 rounded-lg text-sm bg-slate-800 text-slate-400" data-tab="coa">Chart of Accounts</button>
       </div>
-      <div>
-        <h4 class="font-700 text-navy-700 mb-2 uppercase text-xs tracking-wider">Liabilitas</h4>
-        <table class="tbl">
-        ${Object.values(liabilities).map(a => `<tr><td>${a.name}</td><td class="font-mono text-right">${fmtCurrency(a.balance)}</td></tr>`).join('')}
-        <tr class="font-700 bg-navy-50"><td>Total Liabilitas</td><td class="font-mono text-right">${fmtCurrency(totalLiab)}</td></tr>
-        </table>
-        <h4 class="font-700 text-navy-700 mb-2 mt-4 uppercase text-xs tracking-wider">Ekuitas</h4>
-        <table class="tbl">
-        ${Object.values(equity).map(a => `<tr><td>${a.name}</td><td class="font-mono text-right">${fmtCurrency(a.balance)}</td></tr>`).join('')}
-        <tr><td>Laba Ditahan</td><td class="font-mono text-right">${fmtCurrency(netIncome)}</td></tr>
-        <tr class="font-700 bg-navy-50"><td>Total Ekuitas</td><td class="font-mono text-right">${fmtCurrency(totalEquity)}</td></tr>
-        </table>
-        <div class="mt-3 p-2 rounded bg-navy-900 text-white font-700 text-right">Total L + E: ${fmtCurrency(totalLiab + totalEquity)}</div>
-      </div>
-    </div>`;
+      <div id="accTabContent"></div>
+    </div>
+  `;
+
+  let activeAccTab = 'journals';
+  const journalFields = [
+    { key: 'date', label: 'Date', type: 'text', required: true },
+    { key: 'reference', label: 'Reference', type: 'text' },
+    { key: 'description', label: 'Description', type: 'text', required: true },
+    { key: 'debit_account', label: 'Debit Account', type: 'text' },
+    { key: 'credit_account', label: 'Credit Account', type: 'text' },
+    { key: 'amount', label: 'Amount', type: 'number', required: true },
+  ];
+  const coaFields = [
+    { key: 'code', label: 'Code', type: 'text', required: true },
+    { key: 'name', label: 'Account Name', type: 'text', required: true },
+    { key: 'type', label: 'Type', type: 'select', options: ['asset','liability','equity','revenue','expense'], required: true },
+    { key: 'parent', label: 'Parent Code', type: 'text' },
+  ];
+
+  function renderAccTab() {
+    const container = document.getElementById('accTabContent');
+    if (activeAccTab === 'journals') {
+      container.innerHTML = `
+        <div class="flex justify-end mb-2"><button id="accAdd" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Entry</button></div>
+        ${journals.length === 0 ? '<div class="text-center py-12 text-slate-500">No journal entries yet</div>' : `
+          <div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-sm"><thead><tr class="bg-slate-800/70">
+            <th class="text-left px-3 py-2 text-xs text-slate-400">Date</th><th class="text-left px-3 py-2 text-xs text-slate-400">Ref</th><th class="text-left px-3 py-2 text-xs text-slate-400">Description</th><th class="text-left px-3 py-2 text-xs text-slate-400">Debit</th><th class="text-left px-3 py-2 text-xs text-slate-400">Credit</th><th class="text-right px-3 py-2 text-xs text-slate-400">Amount</th><th class="px-3 py-2"></th>
+          </tr></thead><tbody>${journals.map(j => `
+            <tr class="border-t border-slate-800/50"><td class="px-3 py-2 text-xs">${j.date||'-'}</td><td class="px-3 py-2 text-xs">${j.reference||'-'}</td><td class="px-3 py-2">${j.description||'-'}</td><td class="px-3 py-2 text-emerald-400 text-xs">${j.debit_account||'-'}</td><td class="px-3 py-2 text-cyan-400 text-xs">${j.credit_account||'-'}</td><td class="px-3 py-2 text-right font-mono">Rp ${fmt(j.amount)}</td><td class="px-3 py-2"><button class="acc-del text-slate-400 hover:text-red-400" data-id="${j.__backendId}"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td></tr>
+          `).join('')}</tbody></table></div>
+        `}
+      `;
+      document.getElementById('accAdd').addEventListener('click', () => showFormModal('journal_entry', journalFields, null));
+      container.querySelectorAll('.acc-del').forEach(btn => { btn.addEventListener('click', () => { const item = journals.find(i => i.__backendId === btn.dataset.id); if (item) showDeleteConfirm(item); }); });
+    } else {
+      container.innerHTML = `
+        <div class="flex justify-end mb-2"><button id="accAdd" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Account</button></div>
+        ${coa.length === 0 ? '<div class="text-center py-12 text-slate-500">No accounts yet</div>' : `
+          <div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-sm"><thead><tr class="bg-slate-800/70">
+            <th class="text-left px-3 py-2 text-xs text-slate-400">Code</th><th class="text-left px-3 py-2 text-xs text-slate-400">Name</th><th class="text-left px-3 py-2 text-xs text-slate-400">Type</th><th class="text-left px-3 py-2 text-xs text-slate-400">Parent</th><th class="px-3 py-2"></th>
+          </tr></thead><tbody>${coa.map(a => `
+            <tr class="border-t border-slate-800/50"><td class="px-3 py-2 font-mono text-xs">${a.code||'-'}</td><td class="px-3 py-2">${a.name||'-'}</td><td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-xs ${a.type==='asset'?'bg-blue-900/50 text-blue-400':a.type==='liability'?'bg-red-900/50 text-red-400':a.type==='equity'?'bg-violet-900/50 text-violet-400':a.type==='revenue'?'bg-emerald-900/50 text-emerald-400':'bg-amber-900/50 text-amber-400'}">${a.type||'-'}</span></td><td class="px-3 py-2 text-xs">${a.parent||'-'}</td><td class="px-3 py-2"><button class="acc-del text-slate-400 hover:text-red-400" data-id="${a.__backendId}"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></td></tr>
+          `).join('')}</tbody></table></div>
+        `}
+      `;
+      document.getElementById('accAdd').addEventListener('click', () => showFormModal('coa', coaFields, null));
+      container.querySelectorAll('.acc-del').forEach(btn => { btn.addEventListener('click', () => { const item = coa.find(i => i.__backendId === btn.dataset.id); if (item) showDeleteConfirm(item); }); });
+    }
+    lucide.createIcons();
+  }
+
+  main.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      main.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeAccTab = btn.dataset.tab;
+      renderAccTab();
+    });
+  });
+  renderAccTab();
 }
 
-function renderAR(el) {
-  const invoices = getByType('invoice').filter(i => i.status !== 'Cancelled' && i.status !== 'Paid');
-  let total = 0;
-  el.innerHTML = `
-    <h3 class="font-700 text-navy-900 mb-3">Daftar Piutang</h3>
-    ${invoices.length ? `<table class="tbl"><thead><tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Terbayar</th><th>Sisa</th><th>Jatuh Tempo</th></tr></thead><tbody>
-    ${invoices.map(inv => { const d=parseData(inv); const rem=(d.total||0)-(d.paid_amount||0); total+=rem; const overdue=new Date(d.due_date)<new Date();
-      return `<tr><td class="font-mono text-xs font-600">${d.number}</td><td class="font-600">${d.customer_name}</td><td class="font-mono">${fmtCurrency(d.total)}</td><td class="font-mono">${fmtCurrency(d.paid_amount||0)}</td><td class="font-mono font-600 text-red-600">${fmtCurrency(rem)}</td><td class="${overdue?'text-red-600 font-600':''}">${fmtDate(d.due_date)} ${overdue?'⚠':''}</td></tr>`; }).join('')}
-    <tr class="font-700 bg-navy-50"><td colspan="4">Total Piutang</td><td class="font-mono text-red-600">${fmtCurrency(total)}</td><td></td></tr>
-    </tbody></table>` : '<p class="text-sm text-navy-400">Tidak ada piutang terbuka.</p>'}`;
+// ============ INIT ============
+async function init() {
+  buildNav();
+  renderCurrentPage();
+  const result = await window.dataSdk.init(dataHandler);
+  if (!result.isOk) { toast('Failed to connect to data storage', 'error'); }
 }
 
-function renderAP(el) {
-  const bills = getByType('vendor_bill').filter(b => b.status !== 'Cancelled' && b.status !== 'Paid');
-  let total = 0;
-  el.innerHTML = `
-    <h3 class="font-700 text-navy-900 mb-3">Daftar Hutang</h3>
-    ${bills.length ? `<table class="tbl"><thead><tr><th>Bill</th><th>Vendor</th><th>Total</th><th>Terbayar</th><th>Sisa</th><th>Jatuh Tempo</th></tr></thead><tbody>
-    ${bills.map(b => { const d=parseData(b); const rem=(d.total||0)-(d.paid_amount||0); total+=rem; const overdue=new Date(d.due_date)<new Date();
-      return `<tr><td class="font-mono text-xs font-600">${d.number}</td><td class="font-600">${d.vendor_name}</td><td class="font-mono">${fmtCurrency(d.total)}</td><td class="font-mono">${fmtCurrency(d.paid_amount||0)}</td><td class="font-mono font-600 text-red-600">${fmtCurrency(rem)}</td><td class="${overdue?'text-red-600 font-600':''}">${fmtDate(d.due_date)} ${overdue?'⚠':''}</td></tr>`; }).join('')}
-    <tr class="font-700 bg-navy-50"><td colspan="4">Total Hutang</td><td class="font-mono text-red-600">${fmtCurrency(total)}</td><td></td></tr>
-    </tbody></table>` : '<p class="text-sm text-navy-400">Tidak ada hutang terbuka.</p>'}`;
-}
-
-// ============================================================
-// DELETE CONFIRMATION
-// ============================================================
-function confirmDelete(backendId, label) {
-  showModal('Konfirmasi Hapus', `
-    <p class="text-sm text-navy-600 mb-4">Yakin ingin menghapus data ${label} ini?</p>
-    <div class="flex justify-end gap-2">
-      <button class="btn btn-secondary" onclick="closeModal()">Batal</button>
-      <button class="btn btn-danger" onclick="doDelete('${backendId}')">Hapus</button>
-    </div>`);
-}
-
-async function doDelete(backendId) {
-  const rec = ALL_DATA.find(d => d.__backendId === backendId);
-  if (rec && await deleteRecord(rec)) { toast('Data dihapus'); closeModal(); }
-}
-
-// Init icons
-lucide.createIcons();
+init();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec205e502fef87d',t:'MTc3NjE2MjQ5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec88197738afce2',t:'MTc3NjIzMDQ4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
