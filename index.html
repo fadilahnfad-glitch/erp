@@ -90,8 +90,10 @@ th { position: sticky; top: 0; z-index: 2; }
   <style>body { box-sizing: border-box; }</style>
  </head>
  <body class="h-full bg-slate-950 text-slate-200 font-sans">
-  <div class="erp-wrapper" id="app"><!-- SIDEBAR + MAIN -->
-   <div class="flex h-full w-full"><!-- Sidebar -->
+  <div class="erp-wrapper" id="app">
+   <!-- SIDEBAR + MAIN -->
+   <div class="flex h-full w-full">
+    <!-- Sidebar -->
     <nav id="sidebar" class="w-56 flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col h-full overflow-y-auto">
      <div class="p-4 border-b border-slate-800">
       <h1 id="appTitle" class="text-lg font-bold text-emerald-400 truncate">E-Commerce ERP</h1>
@@ -102,10 +104,13 @@ th { position: sticky; top: 0; z-index: 2; }
       v1.0
      </div>
     </nav><!-- Main -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden"><!-- Top bar -->
-     <header class="h-12 flex-shrink-0 bg-slate-900 border-b border-slate-800 flex items-center px-4 justify-between"><button id="mobileMenuBtn" class="lg:hidden p-1 text-slate-400"><i data-lucide="menu" style="width:20px;height:20px"></i></button>
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+     <!-- Top bar -->
+     <header class="h-12 flex-shrink-0 bg-slate-900 border-b border-slate-800 flex items-center px-4 justify-between">
+      <button id="mobileMenuBtn" class="lg:hidden p-1 text-slate-400"><i data-lucide="menu" style="width:20px;height:20px"></i></button>
       <h2 id="pageTitle" class="text-sm font-semibold text-slate-300"></h2>
-      <div class="flex items-center gap-3"><span id="recordCount" class="text-xs text-slate-500 font-mono"></span>
+      <div class="flex items-center gap-3">
+       <span id="recordCount" class="text-xs text-slate-500 font-mono"></span>
       </div>
      </header><!-- Content -->
      <main id="mainContent" class="flex-1 overflow-y-auto p-4"></main>
@@ -457,7 +462,7 @@ function renderCRUD(entityType, title, fields) {
         const row = rows[i];
         
         // Skip empty rows
-        if (!row || row.every(v => !v || v === '')) {
+        if (!row || row.every(v => v === null || v === undefined || v === '')) {
           skipped++;
           continue;
         }
@@ -466,24 +471,42 @@ function renderCRUD(entityType, title, fields) {
           const obj = { id: genId() };
           let hasData = false;
           
-          fields.forEach((f, idx) => {
-            const cellValue = row[idx];
+          // Map row data to fields - use header matching for flexibility
+          fields.forEach((f) => {
+            // Find matching column by field key
+            let colIndex = -1;
             
+            // First try exact match with header
+            for (let h = 0; h < headers.length; h++) {
+              if (headers[h] === f.label) {
+                colIndex = h;
+                break;
+              }
+            }
+            
+            // If no match, try to match by header length (fallback)
+            if (colIndex === -1 && headers.indexOf(f.label) === -1) {
+              colIndex = fields.indexOf(f);
+              if (colIndex >= row.length) colIndex = -1;
+            }
+            
+            const cellValue = colIndex >= 0 ? row[colIndex] : undefined;
+            
+            // Process cell value
             if (cellValue !== null && cellValue !== undefined && cellValue !== '') {
               const strVal = String(cellValue).trim();
               
-              if (f.type === 'number') {
-                const numVal = parseFloat(strVal);
-                obj[f.key] = isNaN(numVal) ? strVal : numVal;
-              } else if (f.type === 'select') {
-                obj[f.key] = strVal;
-              } else {
-                obj[f.key] = strVal;
+              if (strVal) {
+                if (f.type === 'number') {
+                  const numVal = parseFloat(strVal);
+                  obj[f.key] = isNaN(numVal) ? strVal : numVal;
+                } else if (f.type === 'select') {
+                  obj[f.key] = strVal;
+                } else {
+                  obj[f.key] = strVal;
+                }
+                hasData = true;
               }
-              
-              hasData = true;
-            } else {
-              obj[f.key] = '';
             }
           });
           
@@ -493,7 +516,7 @@ function renderCRUD(entityType, title, fields) {
             .map(f => f.label);
           
           if (missingRequired.length > 0) {
-            errors.push(`Row ${i + 1}: Missing ${missingRequired.join(', ')}`);
+            errors.push(`Row ${i + 1}: Missing required: ${missingRequired.join(', ')}`);
             skipped++;
             continue;
           }
@@ -502,6 +525,8 @@ function renderCRUD(entityType, title, fields) {
             skipped++;
             continue;
           }
+          
+          console.log(`Row ${i + 1} data:`, obj);
           
           const result = await window.dataSdk.create({
             entity_type: entityType,
@@ -513,27 +538,34 @@ function renderCRUD(entityType, title, fields) {
           
           if (result.isOk) {
             imported++;
+            console.log(`✅ Row ${i + 1} imported`);
           } else {
-            errors.push(`Row ${i + 1}: ${result.error?.message || 'Save failed'}`);
+            errors.push(`Row ${i + 1}: Save failed - ${result.error?.message || 'Unknown error'}`);
             skipped++;
+            console.log(`❌ Row ${i + 1} failed:`, result.error);
           }
         } catch (rowErr) {
           errors.push(`Row ${i + 1}: ${rowErr.message}`);
           skipped++;
+          console.error(`Row ${i + 1} exception:`, rowErr);
         }
       }
       
-      // Show results
+      // Show results with detailed errors
       if (imported > 0) {
         toast(`✅ Imported ${imported} record${imported !== 1 ? 's' : ''}${skipped > 0 ? `, skipped ${skipped}` : ''}`);
       } else if (skipped > 0) {
-        toast(`⚠️ No records imported. ${skipped} skipped.`, 'error');
+        // Show first error as hint
+        const firstError = errors[0] || 'Unknown reason';
+        toast(`⚠️ No records imported. ${skipped} skipped. First error: ${firstError}`, 'error');
       } else {
         toast('No data to import', 'error');
       }
       
-      if (errors.length > 0 && errors.length <= 5) {
-        console.log('Import errors:', errors.join('\n'));
+      if (errors.length > 0) {
+        console.log('=== IMPORT ERRORS ===');
+        errors.slice(0, 10).forEach(e => console.log(e));
+        if (errors.length > 10) console.log(`... and ${errors.length - 10} more`);
       }
       
       document.getElementById('fileInput').value = '';
@@ -580,6 +612,90 @@ function showFormModal(entityType, fields, editItem) {
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
+  
+  // ✅ MASTER HELPER: Get dynamic options untuk field apa pun
+  function getFieldOptions(field) {
+    // 1️⃣ Jika field sudah punya options predefined (static select)
+    if (field.options) return field.options;
+    
+    // 2️⃣ Dynamic options dari master data - ALL MAPPINGS
+    const dynamicMappings = {
+      'channel': () => getByType('channel').map(c => c.name).filter(Boolean),
+      'channel_name': () => getByType('channel').map(c => c.name).filter(Boolean),
+      'supplier': () => getByType('supplier').map(s => s.name).filter(Boolean),
+      'supplier_name': () => getByType('supplier').map(s => s.name).filter(Boolean),
+      'product': () => getByType('product').map(p => p.name || p.internal_code).filter(Boolean),
+      'product_name': () => getByType('product').map(p => p.name || p.internal_code).filter(Boolean),
+      'customer': () => getByType('customer').map(c => c.name).filter(Boolean),
+      'customer_name': () => getByType('customer').map(c => c.name).filter(Boolean),
+      'platform': () => ['tiktok','shopee','tokopedia','lazada','website','other'],
+      'ads_account': () => ['Main Account', 'Secondary Account', 'Test Account'],
+    };
+    
+    if (dynamicMappings[field.key]) {
+      const opts = dynamicMappings[field.key]();
+      return opts.length > 0 ? opts : [];
+    }
+    
+    return [];
+  }
+  
+  // Helper: Check apakah field adalah date picker
+  function isDateField(field) {
+    const dateKeys = ['date', 'order_date', 'settled_date', 'return_date', 'start_date', 'end_date', 'payment_date', 'created_at', 'updated_at'];
+    return dateKeys.some(k => field.key.toLowerCase().includes(k)) || field.type === 'date';
+  }
+  
+  // Helper: Check if field should be dropdown (excluding date fields)
+  function isDropdownField(field) {
+    if (field.type === 'select') return true;
+    if (isDateField(field)) return false;
+    const dropdownKeys = ['channel', 'channel_name', 'supplier', 'supplier_name', 'product', 'product_name', 'customer', 'customer_name', 'platform', 'ads_account'];
+    if (dropdownKeys.includes(field.key)) {
+      const options = getFieldOptions(field);
+      return options.length > 0;
+    }
+    return false;
+  }
+  
+  function formatDateForInput(val) {
+    if (!val) return '';
+    if (typeof val === 'string' && val.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    if (typeof val === 'string' && val.includes('/')) {
+      const parts = val.split('/');
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+      }
+    }
+    try {
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return '';
+      return d.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  }
+  
+  function convertDateToStorage(val) {
+    if (!val) return '';
+    if (typeof val !== 'string') return '';
+    if (val.includes('/')) return val;
+    // Ensure YYYY-MM-DD format from input, convert to DD/MM/YYYY for storage
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      const [year, month, day] = val.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    return val;
+  }
+  
+  // Helper: Get variants for a product
+  function getProductVariants(productName) {
+    const products = getByType('product');
+    const product = products.find(p => (p.name || p.internal_code) === productName);
+    return product?.variants || [];
+  }
+  
   overlay.innerHTML = `
     <div class="modal-box fade-in">
       <div class="flex justify-between items-center mb-4">
@@ -587,22 +703,42 @@ function showFormModal(entityType, fields, editItem) {
         <button class="close-modal text-slate-400 hover:text-white"><i data-lucide="x" style="width:20px;height:20px"></i></button>
       </div>
       <form id="crudForm" class="space-y-3">
-        ${fields.map(f => `
+        ${fields.map(f => {
+          const options = getFieldOptions(f);
+          const isDropdown = isDropdownField(f);
+          const isDate = isDateField(f);
+          const currentValue = editItem ? (editItem[f.key] ?? '') : '';
+          
+          return `
           <div>
             <label class="block text-xs text-slate-400 mb-1">${f.label}${f.required ? ' *' : ''}</label>
-            ${f.type === 'select' ? `
-              <select name="${f.key}" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none">
-                <option value="">Select...</option>
-                ${f.options.map(o => `<option value="${o}" ${editItem && editItem[f.key] === o ? 'selected' : ''}>${o}</option>`).join('')}
+            ${isDropdown ? `
+              <select name="${f.key}" ${f.required ? 'required' : ''} class="product-field w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" data-field-key="${f.key}">
+                <option value="">-- Pilih ${f.label} --</option>
+                ${options.map(o => `<option value="${o}" ${currentValue === o ? 'selected' : ''}>${o}</option>`).join('')}
               </select>
+            ` : isDate ? `
+              <input type="date" name="${f.key}" value="${formatDateForInput(currentValue)}" ${f.required ? 'required' : ''} class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" style="color-scheme: dark;">
             ` : `
-              <input type="${f.type === 'number' ? 'number' : 'text'}" name="${f.key}" value="${editItem ? (editItem[f.key] ?? '') : ''}" ${f.required ? 'required' : ''} class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" step="${f.type === 'number' ? 'any' : ''}">
+              <input type="${f.type === 'number' ? 'number' : 'text'}" name="${f.key}" value="${currentValue}" ${f.required ? 'required' : ''} class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none" step="${f.type === 'number' ? 'any' : ''}" placeholder="${f.label}">
             `}
           </div>
-        `).join('')}
-        <div class="flex justify-end gap-2 pt-3">
-          <button type="button" class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
-          <button type="submit" id="saveBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition">Save</button>
+          `;
+        }).join('')}
+        
+        <!-- Dynamic Variant Selection (shown only if product_name field exists and has value) -->
+        <div id="variantSection" style="display: none;">
+          <label class="block text-xs text-slate-400 mb-1">Variant (SKU)</label>
+          <select name="variant" id="variantSelect" class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none">
+            <option value="">-- Pilih Variant --</option>
+          </select>
+        </div>
+        
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+          <button type="button" class="close-modal px-4 py-2 text-sm text-slate-400 hover:text-white transition">Batal</button>
+          <button type="submit" id="saveBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm rounded-lg transition flex items-center gap-2">
+            <i data-lucide="save" style="width:14px;height:14px"></i> Simpan
+          </button>
         </div>
       </form>
     </div>
@@ -611,19 +747,71 @@ function showFormModal(entityType, fields, editItem) {
   overlay.querySelectorAll('.close-modal').forEach(b => b.addEventListener('click', () => overlay.remove()));
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 
+  // Handle product selection - show variant selector
+  const productSelects = overlay.querySelectorAll('select[name="product_name"], select[name="product"]');
+  productSelects.forEach(select => {
+    const fieldKey = select.name;
+    
+    // Check if this is a product_name or product field
+    if (fieldKey === 'product_name' || fieldKey === 'product') {
+      select.addEventListener('change', (e) => {
+        const selectedProduct = e.target.value;
+        const variantSection = overlay.querySelector('#variantSection');
+        const variantSelect = overlay.querySelector('#variantSelect');
+        
+        if (selectedProduct && variantSection && variantSelect) {
+          const variants = getProductVariants(selectedProduct);
+          
+          // If product has variants, show variant selector
+          if (variants && variants.length > 0) {
+            variantSelect.innerHTML = '<option value="">-- Pilih Variant --</option>' + 
+              variants.map(v => `<option value="${v.sku || v.name}">${v.name} (${v.sku})</option>`).join('');
+            variantSection.style.display = 'block';
+          } else {
+            variantSection.style.display = 'none';
+          }
+        } else if (variantSection) {
+          variantSection.style.display = 'none';
+        }
+      });
+      
+      // Trigger change event if edit mode with existing product
+      if (editItem && editItem[fieldKey]) {
+        setTimeout(() => select.dispatchEvent(new Event('change')), 100);
+      }
+    }
+  });
+
   document.getElementById('crudForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block"></i> Saving...';
+    btn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block"></i> Menyimpan...';
     
     const fd = new FormData(e.target);
     const obj = { id: editItem?.id || genId() };
+    
+    // ✅ Map form data ke object dengan type conversion + date handling + variant
     fields.forEach(f => {
       let v = fd.get(f.key);
-      if (f.type === 'number' && v) v = parseFloat(v);
-      obj[f.key] = v || '';
+      if (v === null || v === undefined || v === '') {
+        obj[f.key] = '';
+      } else if (isDateField(f)) {
+        // Convert YYYY-MM-DD (from input) to DD/MM/YYYY (for storage)
+        obj[f.key] = convertDateToStorage(v);
+      } else if (f.type === 'number') {
+        const numVal = parseFloat(v);
+        obj[f.key] = isNaN(numVal) ? v : numVal;
+      } else {
+        obj[f.key] = String(v).trim();
+      }
     });
+    
+    // Add selected variant if exists
+    const variantValue = fd.get('variant');
+    if (variantValue) {
+      obj.variant = variantValue;
+    }
     
     let ok;
     if (editItem) { 
@@ -633,14 +821,15 @@ function showFormModal(entityType, fields, editItem) {
     }
     
     if (ok) { 
-      toast(editItem ? 'Updated!' : 'Created!');
+      toast(editItem ? '✅ Diupdate!' : '✅ Ditambah!');
       overlay.remove(); 
     } else { 
       btn.disabled = false;
-      btn.textContent = 'Save';
+      btn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px"></i> Simpan';
     }
     lucide.createIcons();
   });
+
   lucide.createIcons();
 }
 
@@ -1139,11 +1328,11 @@ function feeRow(label, amount) {
 // ============ SALES ORDERS ============
 const salesFields = [
   { key: 'external_order_id', label: 'Order ID', type: 'text', required: true },
-  { key: 'channel', label: 'Channel', type: 'text' },
+  { key: 'channel_name', label: 'Channel', type: 'select' },
   { key: 'customer_name', label: 'Customer', type: 'text' },
   { key: 'order_date', label: 'Order Date', type: 'text' },
   { key: 'order_status', label: 'Status', type: 'select', options: ['pending','processing','shipped','delivered','cancelled'] },
-  { key: 'product_name', label: 'Product', type: 'text' },
+  { key: 'product_name', label: 'Product', type: 'select' },
   { key: 'qty', label: 'Qty', type: 'number' },
   { key: 'price', label: 'Price', type: 'number' },
   { key: 'shipping_fee', label: 'Shipping Fee', type: 'number' },
@@ -1174,10 +1363,10 @@ function renderSettlements() { renderCRUD('settlement', 'Settlements', settlemen
 
 // ============ PURCHASES ============
 const purchaseFields = [
-  { key: 'supplier_name', label: 'Supplier', type: 'text', required: true },
+  { key: 'supplier_name', label: 'Supplier', type: 'select', required: true },
   { key: 'order_date', label: 'Order Date', type: 'text' },
   { key: 'status', label: 'Status', type: 'select', options: ['draft','ordered','received','partial'] },
-  { key: 'product_name', label: 'Product', type: 'text' },
+  { key: 'product_name', label: 'Product', type: 'select' },
   { key: 'qty', label: 'Qty', type: 'number' },
   { key: 'price', label: 'Unit Price', type: 'number' },
   { key: 'total_amount', label: 'Total', type: 'number' },
@@ -1251,7 +1440,7 @@ function renderInventory() {
   `;
 
   const movementFields = [
-    { key: 'product_name', label: 'Product', type: 'text', required: true },
+    { key: 'product_name', label: 'Product', type: 'select', required: true },
     { key: 'movement_type', label: 'Type', type: 'select', options: ['IN','OUT'], required: true },
     { key: 'qty', label: 'Quantity', type: 'number', required: true },
     { key: 'unit_cost', label: 'Unit Cost', type: 'number' },
@@ -1269,7 +1458,7 @@ const returnFields = [
   { key: 'return_type', label: 'Type', type: 'select', options: ['cancel','return','refund'], required: true },
   { key: 'return_date', label: 'Date', type: 'text' },
   { key: 'status', label: 'Status', type: 'select', options: ['pending','approved','completed'] },
-  { key: 'product_name', label: 'Product', type: 'text' },
+  { key: 'product_name', label: 'Product', type: 'select' },
   { key: 'qty', label: 'Qty', type: 'number' },
   { key: 'refund_amount', label: 'Refund Amount', type: 'number' },
   { key: 'notes', label: 'Notes', type: 'text' },
@@ -1312,7 +1501,7 @@ function renderAds() {
   const campaignFields = [
     { key: 'campaign_name', label: 'Campaign', type: 'text', required: true },
     { key: 'platform', label: 'Platform', type: 'select', options: ['tiktok','shopee','google','meta','other'] },
-    { key: 'product_name', label: 'Product', type: 'text' },
+    { key: 'product_name', label: 'Product', type: 'select' },
     { key: 'pic', label: 'PIC', type: 'text' },
     { key: 'cost', label: 'Cost', type: 'number' },
     { key: 'impressions', label: 'Impressions', type: 'number' },
@@ -1321,7 +1510,7 @@ function renderAds() {
     { key: 'date', label: 'Date', type: 'text' },
   ];
   const batchFields = [
-    { key: 'ads_account', label: 'Account', type: 'text', required: true },
+    { key: 'ads_account', label: 'Account', type: 'select', required: true },
     { key: 'start_date', label: 'Start', type: 'text' },
     { key: 'end_date', label: 'End', type: 'text' },
     { key: 'total_spend', label: 'Spend', type: 'number' },
@@ -1329,7 +1518,7 @@ function renderAds() {
     { key: 'total_billed', label: 'Billed', type: 'number' },
   ];
   const paymentFields = [
-    { key: 'ads_account', label: 'Account', type: 'text', required: true },
+    { key: 'ads_account', label: 'Account', type: 'select', required: true },
     { key: 'payment_date', label: 'Date', type: 'text' },
     { key: 'amount', label: 'Amount', type: 'number' },
     { key: 'method', label: 'Method', type: 'text' },
@@ -1464,5 +1653,5 @@ async function init() {
 
 init();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec9569b85348beb',t:'MTc3NjIzOTIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ed256d9b3718592',t:'MTc3NjMzMzU4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
